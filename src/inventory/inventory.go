@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/smahm006/gear/lib/io"
@@ -9,11 +10,13 @@ import (
 
 type Inventory struct {
 	Groups map[string]*Group
+	Hosts  map[string]*Host
 }
 
 func NewInventory() *Inventory {
 	return &Inventory{
 		Groups: make(map[string]*Group),
+		Hosts:  make(map[string]*Host),
 	}
 }
 
@@ -26,11 +29,19 @@ func (i *Inventory) LoadInventory(path string) error {
 	if err != nil {
 		return err
 	}
-	var processGroups func(gname string, gdata interface{}) (*Group, error)
-	processGroups = func(gname string, gdata interface{}) (*Group, error) {
+	var processGroups func(gname string, gdata interface{}, parent *Group) (*Group, error)
+	processGroups = func(gname string, gdata interface{}, parent *Group) (*Group, error) {
 		group := NewGroup(gname)
+		if parent != nil {
+			group.ParentGroups[parent.Name] = parent
+		}
 		if err := validateInventoryValueType(path, gname, gdata, reflect.TypeOf(map[string]interface{}{})); err != nil {
 			return group, err
+		}
+		if gname == "local" {
+			localhost := NewHost("127.0.0.1")
+			group.Hosts["127.0.0.1"] = localhost
+			i.Hosts["127.0.0.1"] = localhost
 		}
 		for gkey, gvalue := range gdata.(map[string]interface{}) {
 			switch gkey {
@@ -52,6 +63,7 @@ func (i *Inventory) LoadInventory(path string) error {
 				case string:
 					host := NewHost(gvalue.(string))
 					group.Hosts[host.Name] = host
+					i.Hosts[host.Name] = host
 				case map[string]interface{}:
 					for hname, hdata := range v {
 						host := NewHost(hname)
@@ -73,6 +85,7 @@ func (i *Inventory) LoadInventory(path string) error {
 							}
 						}
 						group.Hosts[host.Name] = host
+						i.Hosts[host.Name] = host
 					}
 				case []interface{}:
 					for _, hvalue := range v {
@@ -80,6 +93,7 @@ func (i *Inventory) LoadInventory(path string) error {
 						case string:
 							host := NewHost(hvalue.(string))
 							group.Hosts[host.Name] = host
+							i.Hosts[host.Name] = host
 						case map[string]interface{}:
 							for hname, hdata := range v {
 								host := NewHost(hname)
@@ -101,21 +115,21 @@ func (i *Inventory) LoadInventory(path string) error {
 									}
 								}
 								group.Hosts[host.Name] = host
+								i.Hosts[host.Name] = host
 							}
 						}
 					}
 				}
 			// if key is not hosts, vars or env we assume it is a subgroup
 			default:
-				subgroup, err := processGroups(gkey, gvalue)
+				subgroup, err := processGroups(gkey, gvalue, group)
 				if err != nil {
 					return nil, err
 				}
-				if group.SubGroup == nil {
-					group.SubGroup = make(map[string]*Group)
+				for _, host := range subgroup.Hosts {
+					group.Hosts[host.Name] = host
 				}
-				subgroup.ParentGroup = group.Name
-				group.SubGroup[gkey] = subgroup
+				group.SubGroups[gkey] = subgroup
 			}
 		}
 		return group, nil
@@ -130,14 +144,16 @@ func (i *Inventory) LoadInventory(path string) error {
 		return err
 	}
 	for gname, gdata := range m {
-		group, err := processGroups(gname, gdata)
+		group, err := processGroups(gname, gdata, nil)
 		if err != nil {
 			return err
 		}
 		i.Groups[gname] = group
 	}
-	if err = validateInvetoryData(path, i); err != nil {
+	if err = validateInventoryData(path, i); err != nil {
 		return err
 	}
+
+	fmt.Print(i.Groups["servers"].Hosts["192.168.60.11"].Environment)
 	return nil
 }
