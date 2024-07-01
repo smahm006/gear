@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"os"
 
 	"github.com/smahm006/gear/lib/logger"
@@ -25,6 +27,12 @@ func entrypoint() error {
 		cmd.ShowVersion()
 		return nil
 	}
-	inventory := inventory.NewInventory()
+	i := inventory.NewInventory()
+	if err = i.LoadInventory(cli.InventoryPath); err != nil {
+		return err
+	}
+	b, err := json.MarshalIndent(i, "", "  ")
+	fmt.Println(err)
+	fmt.Print(string(b))
 	return nil
 }
