@@ -45,9 +45,9 @@ func (h Host) SetOs(uname string) {
 }
 
 func (h Host) SetDistro(osrelease string) {
-	var apt_distros = regexp.MustCompile(`Debian|Ubuntu|LinuxMint`)
-	var pacman_distros = regexp.MustCompile(`Arch Linux|Manjaro`)
-	var rpm_distros = regexp.MustCompile(`Arch Linux|Manjaro`)
+	apt_distros := regexp.MustCompile(`Debian|Ubuntu|LinuxMint`)
+	pacman_distros := regexp.MustCompile(`Arch Linux|Manjaro`)
+	rpm_distros := regexp.MustCompile(`Arch Linux|Manjaro`)
 	switch {
 	case apt_distros.MatchString(osrelease):
 		h.PackageManager = new(PackageManager)

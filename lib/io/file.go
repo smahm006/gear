@@ -5,15 +5,15 @@ import (
 	"path/filepath"
 )
 
-func OpenFile(path string) (*os.File, error) {
+func ReadFile(path string) ([]byte, error) {
 	fullPath, err := filepath.Abs(path)
 	if err != nil {
 		return nil, err
 	}
-	file, err := os.Open(fullPath)
+	contents, err := os.ReadFile(fullPath)
 	if err != nil {
 		return nil, err
 	}
 
-	return file, nil
+	return contents, nil
 }

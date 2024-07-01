@@ -9,14 +9,14 @@ import (
 )
 
 type CLIParser struct {
-	Help           bool
-	Version        bool
-	PlaybookPaths  []string
-	InventoryPaths []string
-	RolePaths      []string
-	Verbosity      uint32
-	Tags           []string
-	ExtraVars      []string
+	Help          bool
+	Version       bool
+	PlaybookPaths []string
+	InventoryPath string
+	RolePaths     []string
+	Verbosity     uint32
+	Tags          []string
+	ExtraVars     []string
 }
 
 func NewCliParser() *CLIParser {
@@ -59,6 +59,7 @@ func (p *CLIParser) Parse() error {
 	}
 	flag.BoolVar(&p.Help, "help", false, "show help")
 	flag.BoolVar(&p.Version, "version", false, "show version")
+	flag.StringVar(&p.InventoryPath, "i", "", "show version")
 	flag.Parse()
 	return nil
 }
