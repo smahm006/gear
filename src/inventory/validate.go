@@ -35,23 +35,17 @@ func validateInventoryPath(path string) (string, error) {
 	return path, nil
 }
 
-func validateInvetoryData(path string, i *Inventory) error {
+func validateInventoryData(path string, i *Inventory) error {
 	return_err := &InventoryValidationError{Path: path}
 	if len(i.Groups) == 0 {
 		return_err.Err = errors.New("no groups found")
 		return return_err
 	}
-	emptyHosts := true
-	for _, group := range i.Groups {
-		if len(group.Hosts) != 0 {
-			emptyHosts = false
-			break
-		}
-	}
-	if emptyHosts {
+	if len(i.Hosts) == 0 {
 		return_err.Err = errors.New("no hosts found")
 		return return_err
 	}
+
 	return nil
 }
 
