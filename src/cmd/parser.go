@@ -11,7 +11,7 @@ import (
 type CLIParser struct {
 	Help          bool
 	Version       bool
-	PlaybookPaths []string
+	PlaybookPath  string
 	InventoryPath string
 	RolePaths     []string
 	Verbosity     uint32
@@ -59,7 +59,8 @@ func (p *CLIParser) Parse() error {
 	}
 	flag.BoolVar(&p.Help, "help", false, "show help")
 	flag.BoolVar(&p.Version, "version", false, "show version")
-	flag.StringVar(&p.InventoryPath, "i", "", "show version")
+	flag.StringVar(&p.InventoryPath, "i", "", "path to inventory")
+	flag.StringVar(&p.PlaybookPath, "p", "", "paths to playbooks")
 	flag.Parse()
 	return nil
 }

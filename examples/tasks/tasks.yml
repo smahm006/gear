@@ -1,0 +1,6 @@
+- !shell
+  name: find latest go version
+  cmd: "ls -la"
+  save: go_latest
+  with:
+    tags: ['dev', 'go']

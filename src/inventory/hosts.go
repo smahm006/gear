@@ -60,3 +60,7 @@ func (h Host) SetDistro(osrelease string) {
 		*h.PackageManager = Rpm
 	}
 }
+
+func (h Host) IsLocal() bool {
+	return h.Name == "127.0.0.1"
+}

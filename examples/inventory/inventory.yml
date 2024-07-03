@@ -1,0 +1,32 @@
+---
+local:
+    env:
+      test: hi
+      test2: bye
+servers:
+  server1:
+    hosts: 192.168.60.10
+    vars:
+      server1_var: hi
+  server2:
+    hosts:
+      - 192.168.60.10
+      - 192.168.60.11:
+          env:
+            server2_host_2_var: hi
+    server2.1:
+      hosts:
+        - 192.168.60.5
+    vars:
+      test: bye
+  server3:
+    hosts:
+      - 192.168.60.10
+      - 192.168.60.11:
+          env:
+            server3_host_2_env: hi
+  vars:
+    servers_var1: smahm
+    servers_var2: 1234
+  env:
+    GOBIN: /bin/go

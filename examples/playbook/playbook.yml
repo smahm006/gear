@@ -1,0 +1,9 @@
+- name: setup laptop
+  groups:
+  - all
+  - local
+  vars:
+    user: smahm
+    home: /home/smahm
+  roles:
+    - role: fonts

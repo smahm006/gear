@@ -1,7 +1,6 @@
 package inventory
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/smahm006/gear/lib/io"
@@ -153,7 +152,15 @@ func (i *Inventory) LoadInventory(path string) error {
 	if err = validateInventoryData(path, i); err != nil {
 		return err
 	}
-
-	fmt.Print(i.Groups["servers"].Hosts["192.168.60.11"].Environment)
 	return nil
+}
+
+func (i *Inventory) GetGroup(name string) (*Group, bool) {
+	group, ok := i.Groups[name]
+	return group, ok
+}
+
+func (i *Inventory) GetHost(name string) (*Host, bool) {
+	host, ok := i.Hosts[name]
+	return host, ok
 }

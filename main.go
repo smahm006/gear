@@ -6,6 +6,7 @@ import (
 	"github.com/smahm006/gear/lib/logger"
 	"github.com/smahm006/gear/src/cmd"
 	"github.com/smahm006/gear/src/inventory"
+	"github.com/smahm006/gear/src/playbooks"
 )
 
 func main() {
@@ -27,6 +28,10 @@ func entrypoint() error {
 	}
 	i := inventory.NewInventory()
 	if err = i.LoadInventory(cli.InventoryPath); err != nil {
+		return err
+	}
+	p := playbooks.NewPlaybook()
+	if err = p.LoadPlaybook(cli.PlaybookPath); err != nil {
 		return err
 	}
 	return nil
