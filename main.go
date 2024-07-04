@@ -3,14 +3,14 @@ package main
 import (
 	"os"
 
-	"github.com/smahm006/gear/lib/logger"
 	"github.com/smahm006/gear/src/cmd"
 	"github.com/smahm006/gear/src/inventory"
 	"github.com/smahm006/gear/src/playbooks"
+	"github.com/smahm006/gear/src/utils"
 )
 
 func main() {
-	logger.CheckErr(entrypoint())
+	utils.CheckErr(entrypoint())
 }
 
 func entrypoint() error {
@@ -19,7 +19,7 @@ func entrypoint() error {
 		return err
 	}
 	if len(os.Args) == 1 || cli.Help {
-		cmd.ShowHelp()
+		cmd.ShowUsage()
 		return nil
 	}
 	if os.Args[1] == "version" || cli.Version {

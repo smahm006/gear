@@ -1,7 +1,7 @@
 package playbooks
 
 import (
-	"github.com/smahm006/gear/lib/io"
+	"github.com/smahm006/gear/src/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -19,7 +19,7 @@ func NewPlaybook() *Playbook {
 }
 
 func (p *Playbook) LoadPlaybook(path string) error {
-	yaml_data, err := io.ReadFile(path)
+	yaml_data, err := utils.ReadFile(path)
 	if err != nil {
 		return err
 	}

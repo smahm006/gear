@@ -11,20 +11,16 @@ type Connection interface {
 	Close() error
 	WhoAmI() (string, error)
 	Execute() error
-	CopyFile() error
-	WriteData() error
+	CopyFile(string, string) error
+	WriteData(string, string) error
 }
 
 func GetConnection(host *inventory.Host) (Connection, error) {
 	var conn Connection
-	var env []string
-	for k, v := range host.Environment {
-		env = append(env, fmt.Sprintf("%s=%s", k, v))
-	}
 	if host.IsLocal() {
-		conn = NewLocalConnection(env)
+		conn = NewLocalConnection(host)
 	} else {
-		conn = NewSshConnection(host, env)
+		conn = NewSshConnection(host)
 	}
 	return conn, nil
 }
