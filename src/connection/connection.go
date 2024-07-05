@@ -1,8 +1,6 @@
 package connection
 
 import (
-	"fmt"
-
 	"github.com/smahm006/gear/src/inventory"
 )
 
