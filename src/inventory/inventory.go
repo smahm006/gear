@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/smahm006/gear/lib/io"
+	"github.com/smahm006/gear/src/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -54,7 +54,9 @@ func (i *Inventory) LoadInventory(path string) error {
 				if err := validateInventoryValueType(path, gkey, gvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 					return group, err
 				}
-				group.Environment = gvalue.((map[string]interface{}))
+				for genvkey, genvvar := range gvalue.((map[string]interface{})) {
+					group.Environment[genvkey] = fmt.Sprint(genvvar)
+				}
 			case "hosts":
 				if group.Hosts == nil {
 					group.Hosts = make(map[string]*Host)
@@ -81,7 +83,9 @@ func (i *Inventory) LoadInventory(path string) error {
 								if err := validateInventoryValueType(path, hkey, hvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 									return group, err
 								}
-								host.Environment = hvalue.((map[string]interface{}))
+								for henvkey, henvvar := range hvalue.((map[string]interface{})) {
+									group.Environment[henvkey] = fmt.Sprint(henvvar)
+								}
 							}
 						}
 						group.Hosts[host.Name] = host
@@ -111,7 +115,9 @@ func (i *Inventory) LoadInventory(path string) error {
 										if err := validateInventoryValueType(path, hhkey, hhvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 											return group, err
 										}
-										host.Environment = hhvalue.((map[string]interface{}))
+										for hhenvkey, hhenvvar := range hhvalue.((map[string]interface{})) {
+											group.Environment[hhenvkey] = fmt.Sprint(hhenvvar)
+										}
 									}
 								}
 								group.Hosts[host.Name] = host
@@ -134,7 +140,7 @@ func (i *Inventory) LoadInventory(path string) error {
 		}
 		return group, nil
 	}
-	yaml_data, err := io.ReadFile(path)
+	yaml_data, err := utils.ReadFile(path)
 	if err != nil {
 		return err
 	}
@@ -153,7 +159,15 @@ func (i *Inventory) LoadInventory(path string) error {
 	if err = validateInventoryData(path, i); err != nil {
 		return err
 	}
-
-	fmt.Print(i.Groups["servers"].Hosts["192.168.60.11"].Environment)
 	return nil
+}
+
+func (i *Inventory) GetGroup(name string) (*Group, bool) {
+	group, ok := i.Groups[name]
+	return group, ok
+}
+
+func (i *Inventory) GetHost(name string) (*Host, bool) {
+	host, ok := i.Hosts[name]
+	return host, ok
 }

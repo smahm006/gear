@@ -6,7 +6,7 @@ import (
 	"os"
 	"reflect"
 
-	"github.com/smahm006/gear/lib/io"
+	"github.com/smahm006/gear/src/utils"
 )
 
 type InventoryValidationError struct {
@@ -22,8 +22,8 @@ func validateInventoryPath(path string) (string, error) {
 	if len(path) == 0 {
 		path1 := "inventory.yaml"
 		path2 := "inventory.yml"
-		_, err1 := io.OpenFile("inventory.yaml")
-		_, err2 := io.OpenFile("inventory.yml")
+		_, err1 := utils.OpenFile("inventory.yaml")
+		_, err2 := utils.OpenFile("inventory.yml")
 		if errors.Is(err1, os.ErrNotExist) || errors.Is(err2, os.ErrNotExist) {
 			return "", fmt.Errorf("no inventory file provided or found")
 		} else if !errors.Is(err1, os.ErrNotExist) {
