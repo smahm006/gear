@@ -1,16 +1,20 @@
-package playbooks
+package playbook
 
 import (
 	"github.com/smahm006/gear/src/utils"
 	"gopkg.in/yaml.v3"
 )
 
-type Playbook []struct {
+type Playbook []Play
+
+type Play struct {
 	Name      string                 `yaml:"name"`
 	Groups    interface{}            `yaml:"groups"`
 	Variables map[string]interface{} `yaml:"vars"`
 	Roles     []struct {
-		Role string `yaml:"role"`
+		Role      string                 `yaml:"role"`
+		Variables map[string]interface{} `yaml:"vars"`
+		Tags      []string               `yaml:"tags"`
 	} `yaml:"roles"`
 }
 

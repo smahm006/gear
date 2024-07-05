@@ -1,9 +1,15 @@
 - name: setup laptop
   groups:
   - all
-  - local
-  vars:
-    user: smahm
-    home: /home/smahm
   roles:
     - role: fonts
+
+
+- name: setup laptop
+  groups:
+  - local
+  roles:
+    - role: fonts
+      vars:
+        user: smahm
+        home: /home/smahm
