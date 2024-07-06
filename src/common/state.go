@@ -5,24 +5,19 @@ import (
 	"github.com/smahm006/gear/src/inventory"
 )
 
+// State - The particular condition that someone or something is in at a specific time. ‘the state of the company's finances’
 type RunState struct {
-	Inevntory *inventory.Inventory
-	Status    RunStatus
-	Verbosity int
-	Variables map[string]interface{}
-	Tags      []string
+	ParsedFlags  *cmd.CliParser
+	Inventory    *inventory.Inventory
+	PlaybookPath string
+	Verbosity    int
+	Variables    map[string]interface{}
+	Tags         []string
 }
 
 func NewRunState(cli *cmd.CliParser, i *inventory.Inventory) *RunState {
 	return &RunState{
-		Inevntory: i,
-		Status:    *NewRunStatus(),
+		Inventory: i,
 		Verbosity: cli.Verbosity,
 	}
-}
-
-type RunStatus struct{}
-
-func NewRunStatus() *RunStatus {
-	return &RunStatus{}
 }

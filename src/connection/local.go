@@ -77,6 +77,9 @@ func (l *LocalConnection) Execute() error {
 	l.Session.Path = sh
 	l.Session.Args = []string{sh, "-c"}
 	err := l.Session.Run()
+	if err != nil {
+		return err
+	}
 	l.Session.Stdout = nil
 	l.Session.Stderr = nil
 	l.Session.Process = nil

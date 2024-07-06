@@ -24,10 +24,10 @@ func (t *Tasks) LoadTasks(path string) error {
 	return nil
 }
 
-func (t *Tasks) RunTasks(state *common.RunState) error {
+func (t *Tasks) RunTasks(status *common.RunStatus) error {
 	for _, task := range *t {
 		utils.PrintMap(task)
-		task.Module.Run()
+		task.RunTask(status)
 	}
 	return nil
 }

@@ -24,3 +24,8 @@ func (g *Group) GetEnv(name string) string {
 	env := g.Environment[name]
 	return env
 }
+
+func (g *Group) GetHost(name string) (*Host, bool) {
+	host, ok := g.Hosts[name]
+	return host, ok
+}

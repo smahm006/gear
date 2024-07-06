@@ -10,11 +10,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Playbook []Play
-
 type Play struct {
 	Name      string                 `yaml:"name"`
-	Groups    interface{}            `yaml:"groups"`
+	Groups    []string               `yaml:"groups"`
 	Variables map[string]interface{} `yaml:"vars"`
 	PreTasks  []tasks.Task           `yaml:"pre"`
 	PostTasks []tasks.Task           `yaml:"post"`
@@ -25,11 +23,13 @@ type Play struct {
 	} `yaml:"roles"`
 }
 
+type Playbook []Play
+
 func NewPlaybook() *Playbook {
 	return &Playbook{}
 }
 
-func (p *Playbook) LoadPlaybook(path string) error {
+func (p *Playbook) LoadPlaybook(path string, cli *cmd.CliParser, inventory *inventory.Inventory) error {
 	yaml_data, err := utils.ReadFile(path)
 	if err != nil {
 		return err
@@ -38,6 +38,12 @@ func (p *Playbook) LoadPlaybook(path string) error {
 	if err != nil {
 		return err
 	}
+	for _, play := range *p {
+		var err error
+		if err = validateGroups(inventory, play); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -45,20 +51,21 @@ func (p *Playbook) RunPlaybook(cli *cmd.CliParser, i *inventory.Inventory) error
 	var err error
 	state := common.NewRunState(cli, i)
 	for _, play := range *p {
+		status := common.NewRunStatus()
 		for _, pre_task := range play.PreTasks {
-			_ = pre_task
+			pre_task.RunTask(status)
 		}
 		for _, p_role := range play.Roles {
 			role := roles.NewRole(p_role.Name, p_role.Variables, p_role.Tags)
 			if err = role.LoadRole(); err != nil {
 				return err
 			}
-			if err = role.RunRole(state); err != nil {
+			if err = role.RunRole(status); err != nil {
 				return err
 			}
 		}
 		for _, post_task := range play.PostTasks {
-			_ = post_task
+			post_task.RunTask(status)
 		}
 	}
 	return nil

@@ -18,6 +18,7 @@ type CliParser struct {
 	Verbosity     int
 	Tags          []string
 	ExtraVars     []string
+	Limit         string
 }
 
 func NewCliParser() *CliParser {
@@ -92,6 +93,7 @@ func (p *CliParser) Parse() error {
 	flag.StringVar(&p.PlaybookPath, "playbook", "", "paths to playbooks")
 	flag.StringVar(&p.PlaybookPath, "u", "", "username for ssh connections")
 	flag.StringVar(&p.PlaybookPath, "user", "", "username for ssh connection")
+	flag.StringVar(&p.PlaybookPath, "limit", "", "group/hosts limit")
 	flag.Parse()
 	return nil
 }

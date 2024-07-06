@@ -1,5 +1,11 @@
 - name: setup laptop
   groups:
   - all
+  pre:
+   - !shell
+     cmd: "ls -la"
   roles:
     - role: test
+  post:
+   - !shell
+     cmd: "ls -la"

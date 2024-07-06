@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"github.com/smahm006/gear/src/common"
 	"github.com/smahm006/gear/src/modules"
 	"gopkg.in/yaml.v3"
 )
@@ -35,5 +36,6 @@ func (t *Task) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-func (t *Task) RunTask() {
+func (t *Task) RunTask(status *common.RunStatus) {
+	return
 }

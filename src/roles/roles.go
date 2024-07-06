@@ -2,7 +2,6 @@ package roles
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/smahm006/gear/src/common"
 	"github.com/smahm006/gear/src/tasks"
@@ -42,21 +41,20 @@ func (r *Role) LoadRole() error {
 	}
 	r.Tags = append(r.Tags, temp_role.Tasks...)
 	r.Handlers = temp_role.Handlers
-	r.Tags = temp_role.Tasks
+	r.Tasks = temp_role.Tasks
 	return nil
 }
 
-func (r *Role) RunRole(state *common.RunState) error {
+func (r *Role) RunRole(status *common.RunStatus) error {
 	var err error
 	for _, r_task := range r.Tasks {
-		wd, _ := os.Getwd()
-		task_path := fmt.Sprintf("%s/examples/tasks/%s", wd, r_task)
+		task_path := fmt.Sprintf("%s/tasks/%s", r.Path, r_task)
 		fmt.Println(task_path)
 		tasks := tasks.NewTasks()
 		if err = tasks.LoadTasks(task_path); err != nil {
 			return err
 		}
-		if err = tasks.RunTasks(state); err != nil {
+		if err = tasks.RunTasks(status); err != nil {
 			return err
 		}
 	}

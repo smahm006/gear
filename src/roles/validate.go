@@ -14,9 +14,9 @@ type RoleValidationError struct {
 	Err  error
 }
 
-func (iv *RoleValidationError) Error() string {
-	name := strings.Replace(iv.Name, ".yml", "", -1)
-	return fmt.Sprintf("validating role %q:\n%v", name, iv.Err)
+func (rv *RoleValidationError) Error() string {
+	name := strings.Replace(rv.Name, ".yml", "", -1)
+	return fmt.Sprintf("validating role %q:\n%v", name, rv.Err)
 }
 
 func validateRole(r *Role) ([]byte, error) {
@@ -27,13 +27,14 @@ func validateRole(r *Role) ([]byte, error) {
 		return nil, role_err
 	}
 	// Every role must have a role.yml
-	path := fmt.Sprintf("%s/examples/roles/%s/role.yml", wd, r.Name)
-	yaml, err := utils.ReadFile(path)
+	role_dir := fmt.Sprintf("%s/examples/roles/%s", wd, r.Name)
+	role_path := fmt.Sprintf("%s/role.yml", role_dir)
+	yaml, err := utils.ReadFile(role_path)
 	if err != nil {
 		role_err.Err = err
 		return nil, role_err
 	}
-	r.Path = path
+	r.Path = role_dir
 	return yaml, nil
 }
 
