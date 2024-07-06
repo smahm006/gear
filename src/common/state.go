@@ -10,14 +10,13 @@ type RunState struct {
 	ParsedFlags  *cmd.CliParser
 	Inventory    *inventory.Inventory
 	PlaybookPath string
-	Verbosity    int
 	Variables    map[string]interface{}
 	Tags         []string
 }
 
 func NewRunState(cli *cmd.CliParser, i *inventory.Inventory) *RunState {
 	return &RunState{
-		Inventory: i,
-		Verbosity: cli.Verbosity,
+		ParsedFlags: cli,
+		Inventory:   i,
 	}
 }

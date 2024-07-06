@@ -31,7 +31,7 @@ func entrypoint() error {
 		return err
 	}
 	p := playbook.NewPlaybook()
-	if err = p.LoadPlaybook(cli.PlaybookPath, cli, i); err != nil {
+	if err = p.LoadPlaybook(cli, i); err != nil {
 		return err
 	}
 	if err = p.RunPlaybook(cli, i); err != nil {

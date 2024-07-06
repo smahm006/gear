@@ -91,9 +91,9 @@ func (p *CliParser) Parse() error {
 	flag.StringVar(&p.InventoryPath, "inventory", "", "path to inventory")
 	flag.StringVar(&p.PlaybookPath, "p", "", "paths to playbooks")
 	flag.StringVar(&p.PlaybookPath, "playbook", "", "paths to playbooks")
-	flag.StringVar(&p.PlaybookPath, "u", "", "username for ssh connections")
-	flag.StringVar(&p.PlaybookPath, "user", "", "username for ssh connection")
-	flag.StringVar(&p.PlaybookPath, "limit", "", "group/hosts limit")
+	// flag.StringVar(&p., "u", "", "username for ssh connections")
+	// flag.StringVar(&p., "user", "", "username for ssh connection")
+	flag.StringVar(&p.Limit, "limit", "", "group/hosts limit")
 	flag.Parse()
 	return nil
 }

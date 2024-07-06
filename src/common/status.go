@@ -13,7 +13,7 @@ type RunStatus struct {
 	Variables       map[string]interface{}
 }
 
-func NewRunStatus(vars map[string]interface{}, hosts map[string]*inventory.Host) *RunStatus {
+func NewRunStatus(hosts map[string]*inventory.Host, vars map[string]interface{}) *RunStatus {
 	return &RunStatus{
 		ConnectionCache: connection.NewConnectionCache(),
 	}

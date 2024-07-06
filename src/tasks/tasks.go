@@ -26,7 +26,6 @@ func (t *Tasks) LoadTasks(path string) error {
 
 func (t *Tasks) RunTasks(status *common.RunStatus) error {
 	for _, task := range *t {
-		utils.PrintMap(task)
 		task.RunTask(status)
 	}
 	return nil

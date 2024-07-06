@@ -29,8 +29,8 @@ func NewPlaybook() *Playbook {
 	return &Playbook{}
 }
 
-func (p *Playbook) LoadPlaybook(path string, cli *cmd.CliParser, inventory *inventory.Inventory) error {
-	yaml_data, err := utils.ReadFile(path)
+func (p *Playbook) LoadPlaybook(cli *cmd.CliParser, inventory *inventory.Inventory) error {
+	yaml_data, err := utils.ReadFile(cli.PlaybookPath)
 	if err != nil {
 		return err
 	}
@@ -38,8 +38,9 @@ func (p *Playbook) LoadPlaybook(path string, cli *cmd.CliParser, inventory *inve
 	if err != nil {
 		return err
 	}
-	for _, play := range *p {
+	for i := range *p {
 		var err error
+		play := &(*p)[i]
 		if err = validateGroups(inventory, play); err != nil {
 			return err
 		}
@@ -50,8 +51,11 @@ func (p *Playbook) LoadPlaybook(path string, cli *cmd.CliParser, inventory *inve
 func (p *Playbook) RunPlaybook(cli *cmd.CliParser, i *inventory.Inventory) error {
 	var err error
 	state := common.NewRunState(cli, i)
-	for _, play := range *p {
-		status := common.NewRunStatus()
+	for i := range *p {
+		play := &(*p)[i]
+		collected_hosts := collectHosts(state, play)
+		collected_vars := collectVars(state, play)
+		status := common.NewRunStatus(collected_hosts, collected_vars)
 		for _, pre_task := range play.PreTasks {
 			pre_task.RunTask(status)
 		}

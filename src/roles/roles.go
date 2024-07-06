@@ -49,7 +49,6 @@ func (r *Role) RunRole(status *common.RunStatus) error {
 	var err error
 	for _, r_task := range r.Tasks {
 		task_path := fmt.Sprintf("%s/tasks/%s", r.Path, r_task)
-		fmt.Println(task_path)
 		tasks := tasks.NewTasks()
 		if err = tasks.LoadTasks(task_path); err != nil {
 			return err
