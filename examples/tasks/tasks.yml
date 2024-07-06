@@ -1,6 +1,20 @@
 - !shell
-  name: find latest go version
-  cmd: "ls -la"
-  save: go_latest
   with:
     tags: ['dev', 'go']
+    sudo: true
+  name: test 1
+  cmd: "ls -la"
+  save: go_latest
+  and:
+    retry: 3
+
+- !shell
+  name: test 2
+  cmd: "echo HI"
+  save: hello
+  with:
+    tags: ['naa']
+
+- !shell
+  name: test 3
+  cmd: "reboot"
