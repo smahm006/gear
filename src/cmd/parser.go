@@ -62,16 +62,16 @@ func ShowVersion() error {
 }
 
 func parseVerbosity(args []string) (int, []string) {
-	verbosityCount := 0
-	remainingArgs := []string{}
+	verbosity_count := 0
+	remaining_args := []string{}
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "-v") {
-			verbosityCount += len(arg) - 1
+			verbosity_count += len(arg) - 1
 		} else {
-			remainingArgs = append(remainingArgs, arg)
+			remaining_args = append(remaining_args, arg)
 		}
 	}
-	return verbosityCount, remainingArgs
+	return verbosity_count, remaining_args
 }
 
 func (p *CliParser) Parse() error {

@@ -10,7 +10,6 @@ type ShellModule struct {
 }
 
 func (s *ShellModule) Run() {
-
 }
 
 func (s *ShellModule) Query() common.TaskRequest {

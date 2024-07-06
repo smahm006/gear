@@ -2,4 +2,4 @@
   groups:
   - all
   roles:
-    - role: roles.yml
+    - role: test

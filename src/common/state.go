@@ -21,8 +21,7 @@ func NewRunState(cli *cmd.CliParser, i *inventory.Inventory) *RunState {
 	}
 }
 
-type RunStatus struct {
-}
+type RunStatus struct{}
 
 func NewRunStatus() *RunStatus {
 	return &RunStatus{}

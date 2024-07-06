@@ -6,7 +6,6 @@ import (
 
 	"github.com/smahm006/gear/src/common"
 	"github.com/smahm006/gear/src/tasks"
-	"github.com/smahm006/gear/src/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -14,22 +13,36 @@ type Role struct {
 	Name      string                 `yaml:"name"`
 	Variables map[string]interface{} `yaml:"vars"`
 	Tasks     []string               `yaml:"tasks"`
+	Tags      []string               `yaml:"tags"`
 	Handlers  []string               `yaml:"handlers"`
+	Path      string
 }
 
-func NewRole() *Role {
-	return &Role{}
+func NewRole(name string, variables map[string]interface{}, tags []string) *Role {
+	return &Role{
+		Name:      name,
+		Variables: variables,
+		Tags:      tags,
+	}
 }
 
-func (r *Role) LoadRole(path string) error {
-	yaml_data, err := utils.ReadFile(path)
+func (r *Role) LoadRole() error {
+	// Some variables and tags might already exist from the playbook stage
+	var temp_role Role
+	yaml_data, err := validateRole(r)
 	if err != nil {
 		return err
 	}
-	err = yaml.Unmarshal(yaml_data, &r)
+	err = yaml.Unmarshal(yaml_data, &temp_role)
 	if err != nil {
 		return err
 	}
+	for k, v := range temp_role.Variables {
+		r.Variables[k] = v
+	}
+	r.Tags = append(r.Tags, temp_role.Tasks...)
+	r.Handlers = temp_role.Handlers
+	r.Tags = temp_role.Tasks
 	return nil
 }
 

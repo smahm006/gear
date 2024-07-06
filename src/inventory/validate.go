@@ -3,7 +3,6 @@ package inventory
 import (
 	"errors"
 	"fmt"
-	"os"
 	"reflect"
 
 	"github.com/smahm006/gear/src/utils"
@@ -15,24 +14,28 @@ type InventoryValidationError struct {
 }
 
 func (iv *InventoryValidationError) Error() string {
-	return fmt.Sprintf("validating %q: %v", iv.Path, iv.Err)
+	return fmt.Sprintf("validating %q:\n%v", iv.Path, iv.Err)
 }
 
-func validateInventoryPath(path string) (string, error) {
+func validateInventoryPath(path string) ([]byte, error) {
+	var yaml []byte
+	var err error
+	inventory_error := &InventoryValidationError{Path: path}
 	if len(path) == 0 {
-		path1 := "inventory.yaml"
-		path2 := "inventory.yml"
-		_, err1 := utils.OpenFile("inventory.yaml")
-		_, err2 := utils.OpenFile("inventory.yml")
-		if errors.Is(err1, os.ErrNotExist) || errors.Is(err2, os.ErrNotExist) {
-			return "", fmt.Errorf("no inventory file provided or found")
-		} else if !errors.Is(err1, os.ErrNotExist) {
-			return path1, nil
-		} else if !errors.Is(err1, os.ErrNotExist) {
-			return path2, nil
+		yaml, err = utils.ReadFile("inventory.yml")
+		if err != nil {
+			inventory_error.Err = err
+			return nil, inventory_error
 		}
+		return yaml, nil
+	} else {
+		yaml, err = utils.ReadFile(path)
+		if err != nil {
+			inventory_error.Err = err
+			return nil, inventory_error
+		}
+		return yaml, nil
 	}
-	return path, nil
 }
 
 func validateInventoryData(path string, i *Inventory) error {

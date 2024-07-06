@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/smahm006/gear/src/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -25,10 +24,6 @@ func NewInventory() *Inventory {
 // a single string, a list of strings each with the option of having it's own
 // variables and environment.
 func (i *Inventory) LoadInventory(path string) error {
-	path, err := validateInventoryPath(path)
-	if err != nil {
-		return err
-	}
 	var processGroups func(gname string, gdata interface{}, parent *Group) (*Group, error)
 	processGroups = func(gname string, gdata interface{}, parent *Group) (*Group, error) {
 		group := NewGroup(gname)
@@ -140,7 +135,7 @@ func (i *Inventory) LoadInventory(path string) error {
 		}
 		return group, nil
 	}
-	yaml_data, err := utils.ReadFile(path)
+	yaml_data, err := validateInventoryPath(path)
 	if err != nil {
 		return err
 	}
