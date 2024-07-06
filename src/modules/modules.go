@@ -1,5 +1,8 @@
 package modules
 
+import "github.com/smahm006/gear/src/common"
+
 type Module interface {
-	Start()
+	Query() common.TaskRequest
+	Run()
 }

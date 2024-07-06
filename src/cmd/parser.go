@@ -3,24 +3,25 @@ package cmd
 import (
 	"flag"
 	"os"
+	"strings"
 	"text/template"
 
 	"github.com/smahm006/gear/src/utils"
 )
 
-type CLIParser struct {
+type CliParser struct {
 	Help          bool
 	Version       bool
 	PlaybookPath  string
 	InventoryPath string
 	RolePaths     []string
-	Verbosity     uint32
+	Verbosity     int
 	Tags          []string
 	ExtraVars     []string
 }
 
-func NewCliParser() *CLIParser {
-	return &CLIParser{
+func NewCliParser() *CliParser {
+	return &CliParser{
 		Help:      false,
 		Version:   false,
 		Verbosity: 0,
@@ -60,13 +61,30 @@ func ShowVersion() error {
 	return nil
 }
 
-func (p *CLIParser) Parse() error {
+func parseVerbosity(args []string) (int, []string) {
+	verbosityCount := 0
+	remainingArgs := []string{}
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "-v") {
+			verbosityCount += len(arg) - 1
+		} else {
+			remainingArgs = append(remainingArgs, arg)
+		}
+	}
+	return verbosityCount, remainingArgs
+}
+
+func (p *CliParser) Parse() error {
 	flag.Usage = func() {
 		utils.CheckErr(ShowUsage())
 	}
+	// Need to parse verbosity first
+	verbosity, remaining_args := parseVerbosity(os.Args[1:])
+	os.Args = append([]string{os.Args[0]}, remaining_args...)
+	p.Verbosity = verbosity
+	// Parse the remaining flags
 	flag.BoolVar(&p.Help, "h", false, "show help")
 	flag.BoolVar(&p.Help, "help", false, "show help")
-	flag.BoolVar(&p.Version, "v", false, "show version")
 	flag.BoolVar(&p.Version, "version", false, "show version")
 	flag.StringVar(&p.InventoryPath, "i", "", "path to inventory")
 	flag.StringVar(&p.InventoryPath, "inventory", "", "path to inventory")

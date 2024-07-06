@@ -1,8 +1,8 @@
 package cmd
 
-func NewGearCommand() (CLIParser, error) {
-	var cmd CLIParser
+func NewGearCommand() (*CliParser, error) {
+	var cmd CliParser
 	cmd = *NewCliParser()
 	cmd.Parse()
-	return cmd, nil
+	return &cmd, nil
 }

@@ -2,14 +2,4 @@
   groups:
   - all
   roles:
-    - role: fonts
-
-
-- name: setup laptop
-  groups:
-  - local
-  roles:
-    - role: fonts
-      vars:
-        user: smahm
-        home: /home/smahm
+    - role: roles.yml
