@@ -49,11 +49,13 @@ func (p *Playbook) LoadPlaybook(cli *cmd.CliParser, inventory *inventory.Invento
 }
 
 func (p *Playbook) RunPlaybook(cli *cmd.CliParser, i *inventory.Inventory) error {
-	var err error
 	state := common.NewRunState(cli, i)
 	for i := range *p {
 		play := &(*p)[i]
-		collected_hosts := collectHosts(state, play)
+		collected_hosts, err := collectHosts(state, play)
+		if err != nil {
+			return err
+		}
 		collected_vars := collectVars(state, play)
 		status := common.NewRunStatus(collected_hosts, collected_vars)
 		for _, pre_task := range play.PreTasks {

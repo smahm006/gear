@@ -30,6 +30,7 @@ func entrypoint() error {
 	if err = i.LoadInventory(cli.InventoryPath); err != nil {
 		return err
 	}
+	// utils.PrintMap(i.Groups["servers"].SubGroups["server2"].Hosts)
 	p := playbook.NewPlaybook()
 	if err = p.LoadPlaybook(cli, i); err != nil {
 		return err

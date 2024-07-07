@@ -157,9 +157,22 @@ func (i *Inventory) LoadInventory(path string) error {
 	return nil
 }
 
+func getGroupNested(m map[string]*Group, name string) (*Group, bool) {
+	if group, exists := m[name]; exists {
+		return group, exists
+	}
+	for _, group := range m {
+		if group.SubGroups != nil {
+			if group, exists := getGroupNested(group.SubGroups, name); exists {
+				return group, exists
+			}
+		}
+	}
+	return nil, false
+}
+
 func (i *Inventory) GetGroup(name string) (*Group, bool) {
-	group, ok := i.Groups[name]
-	return group, ok
+	return getGroupNested(i.Groups, name)
 }
 
 func (i *Inventory) GetHost(name string) (*Host, bool) {

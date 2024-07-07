@@ -25,6 +25,7 @@ servers:
       - 192.168.60.11:
           env:
             server3_host_2_env: hi
+      - 192.168.60.4
   vars:
     servers_var1: smahm
     servers_var2: 1234

@@ -31,7 +31,6 @@ func validateGroups(inventory *inventory.Inventory, play *Play) error {
 			}
 		}
 	}
-
 	return nil
 }
 
