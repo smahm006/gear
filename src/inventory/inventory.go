@@ -7,29 +7,39 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type GroupHostsMembership struct {
+	GroupToHosts map[string][]string
+	HostsToGroup map[string][]string
+}
+
 type Inventory struct {
-	Groups map[string]*Group
-	Hosts  map[string]*Host
+	Groups               map[string]*Group
+	Hosts                map[string]*Host
+	GroupHostsMembership *GroupHostsMembership
 }
 
 func NewInventory() *Inventory {
 	return &Inventory{
 		Groups: make(map[string]*Group),
 		Hosts:  make(map[string]*Host),
+		GroupHostsMembership: &GroupHostsMembership{
+			GroupToHosts: make(map[string][]string),
+			HostsToGroup: make(map[string][]string),
+		},
 	}
 }
 
 // LoadInventory attempts to unmarshal the inventory file provided.
-// The inventory file should be customizable to the point one can have hosts as
-// a single string, a list of strings each with the option of having it's own
+// The inventory file should be flexible to the point one can have hosts as
+// a single string or a list of strings, each with the option of having it's own
 // variables and environment.
 func (i *Inventory) LoadInventory(path string) error {
+	var GroupToHosts = i.GroupHostsMembership.GroupToHosts
+	var HostsToGrops = i.GroupHostsMembership.HostsToGroup
 	var processGroups func(gname string, gdata interface{}, parent *Group) (*Group, error)
 	processGroups = func(gname string, gdata interface{}, parent *Group) (*Group, error) {
 		group := NewGroup(gname)
-		if parent != nil {
-			group.ParentGroups[parent.Name] = parent
-		}
+		group.ParentGroups[parent.Name] = parent
 		if err := validateInventoryValueType(path, gname, gdata, reflect.TypeOf(map[string]interface{}{})); err != nil {
 			return group, err
 		}
@@ -38,6 +48,7 @@ func (i *Inventory) LoadInventory(path string) error {
 			group.Hosts["127.0.0.1"] = localhost
 			i.Hosts["127.0.0.1"] = localhost
 		}
+
 		for gkey, gvalue := range gdata.(map[string]interface{}) {
 			switch gkey {
 			case "vars":
@@ -53,14 +64,16 @@ func (i *Inventory) LoadInventory(path string) error {
 					group.Environment[genvkey] = fmt.Sprint(genvvar)
 				}
 			case "hosts":
-				if group.Hosts == nil {
-					group.Hosts = make(map[string]*Host)
-				}
 				switch v := gvalue.(type) {
+				// hosts: 10.10.10.1
 				case string:
 					host := NewHost(gvalue.(string))
 					group.Hosts[host.Name] = host
 					i.Hosts[host.Name] = host
+				// hosts:
+				//  10.10.10.1:
+				//    vars:
+				//      key: value
 				case map[string]interface{}:
 					for hname, hdata := range v {
 						host := NewHost(hname)
@@ -79,13 +92,19 @@ func (i *Inventory) LoadInventory(path string) error {
 									return group, err
 								}
 								for henvkey, henvvar := range hvalue.((map[string]interface{})) {
-									group.Environment[henvkey] = fmt.Sprint(henvvar)
+									host.Environment[henvkey] = fmt.Sprint(henvvar)
 								}
 							}
 						}
 						group.Hosts[host.Name] = host
 						i.Hosts[host.Name] = host
 					}
+				// hosts:
+				//  - 10.10.10.1
+				//  - 10.10.10.2
+				//  - 10.10.10.3:
+				//      vars:
+				//        key: value
 				case []interface{}:
 					for _, hvalue := range v {
 						switch v := hvalue.(type) {
@@ -111,7 +130,7 @@ func (i *Inventory) LoadInventory(path string) error {
 											return group, err
 										}
 										for hhenvkey, hhenvvar := range hhvalue.((map[string]interface{})) {
-											group.Environment[hhenvkey] = fmt.Sprint(hhenvvar)
+											host.Environment[hhenvkey] = fmt.Sprint(hhenvvar)
 										}
 									}
 								}
@@ -127,8 +146,10 @@ func (i *Inventory) LoadInventory(path string) error {
 				if err != nil {
 					return nil, err
 				}
-				for _, host := range subgroup.Hosts {
-					group.Hosts[host.Name] = host
+				for host_name, host := range subgroup.Hosts {
+					group.Hosts[host_name] = host
+					GroupToHosts[subgroup.Name] = append(GroupToHosts[subgroup.Name], host_name)
+					HostsToGrops[host_name] = append(HostsToGrops[host_name], subgroup.Name)
 				}
 				group.SubGroups[gkey] = subgroup
 			}
@@ -145,15 +166,45 @@ func (i *Inventory) LoadInventory(path string) error {
 		return err
 	}
 	for gname, gdata := range m {
-		group, err := processGroups(gname, gdata, nil)
+		group, err := processGroups(gname, gdata, &Group{})
 		if err != nil {
 			return err
 		}
+		// Add top level groups
 		i.Groups[gname] = group
+		for host_name, _ := range group.Hosts {
+			GroupToHosts[group.Name] = append(GroupToHosts[group.Name], host_name)
+			HostsToGrops[host_name] = append(HostsToGrops[host_name], group.Name)
+		}
 	}
 	if err = validateInventoryData(path, i); err != nil {
 		return err
 	}
+	// Update variable and environment of groups and hosts to include parent group
+	// environment variables. Need to do this after un-marshalling is complete as
+	// you cannot predict how go traverses a map
+	var updateEnvVars func(m map[string]*Group)
+	updateEnvVars = func(m map[string]*Group) {
+		for _, group := range m {
+			if group.SubGroups != nil {
+				updateEnvVars(group.SubGroups)
+			}
+			for key, value := range group.Environment {
+				for _, host := range group.Hosts {
+					host.Environment[key] = value
+				}
+			}
+			for _, parentgroup := range group.ParentGroups {
+				for key, value := range parentgroup.Environment {
+					group.Environment[key] = value
+					for _, host := range group.Hosts {
+						host.Environment[key] = value
+					}
+				}
+			}
+		}
+	}
+	updateEnvVars(i.Groups)
 	return nil
 }
 
@@ -162,8 +213,8 @@ func getGroupNested(m map[string]*Group, name string) (*Group, bool) {
 		return group, exists
 	}
 	for _, group := range m {
-		if group.SubGroups != nil {
-			if group, exists := getGroupNested(group.SubGroups, name); exists {
+		if group.ParentGroups != nil {
+			if group, exists := getGroupNested(group.ParentGroups, name); exists {
 				return group, exists
 			}
 		}

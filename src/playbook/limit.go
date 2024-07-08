@@ -1,22 +1,3 @@
-/*
-   1. NOT - (webservers OR dbservers AND staging) NOT (phoenix)
-   2. OR  ((webservers) OR (dbservers AND staging)) NOT (phoenix)
-   3. AND ((webservers) OR ((dbservers) AND (staging))) NOT (phoenix)
-
-   “all machines in the groups ‘webservers’ and ‘dbservers’ are to be managed if they are in the group ‘staging’ also, but the machines are not to be managed if they are in the group ‘phoenix’"
-
-   webservers:dbservers:&staging:!phoenix
-
-   gear --limit "webservers OR dbservers AND staging AND fire NOT phoenix OR test"
-
-   gear --limit "webservers OR dbservers AND staging NOT phoenix"
-
-   OR = (?:^(?:([^(?:NOT|AND)]*)OR([^(?:NOT|AND)]*))|OR([^(?:NOT|AND)]*))
-   NOT = (?:^(?:([^(?:AND|OR)]*)NOT([^(?:AND|OR)]*))|NOT([^(?:AND|OR)]*))
-   AND = (?:^(?:([^(?:ORNOTAND)]*)AND([^(?:ORNOTAND)]*))|AND([^(?:ORNOTAND)]*))
-
-*/
-
 package playbook
 
 import (
@@ -58,7 +39,6 @@ func (t Token) Apply(slice1 []string, slice2 []string) []string {
 				inter = append(inter, val)
 			}
 		}
-		fmt.Printf("REMOVAL OF\n%v, %v\n%v\n", slice1, slice2, inter)
 		return inter
 	case Or:
 		// Union
@@ -71,7 +51,6 @@ func (t Token) Apply(slice1 []string, slice2 []string) []string {
 		for k := range hash {
 			inter = append(inter, k)
 		}
-		fmt.Printf("UNION OF\n%v, %v\n%v\n", slice1, slice2, inter)
 		return inter
 	case And:
 		// Intersection
@@ -83,7 +62,6 @@ func (t Token) Apply(slice1 []string, slice2 []string) []string {
 				inter = append(inter, e)
 			}
 		}
-		fmt.Printf("INTERSECTION OF\n%v, %v\n%v\n", slice1, slice2, inter)
 		return inter
 	}
 	return nil
@@ -92,7 +70,7 @@ func (t Token) Apply(slice1 []string, slice2 []string) []string {
 func getHostsByName(name string, groups map[string]*inventory.Group) ([]string, error) {
 	var hosts []string
 	if group, exists := groups[name]; exists {
-		for host_name, _ := range group.Hosts {
+		for host_name := range group.Hosts {
 			hosts = append(hosts, host_name)
 		}
 		return hosts, nil
@@ -130,93 +108,63 @@ func divideByToken(limit string, token Token) []string {
 	return parts
 }
 
-// func expressionParse(limit string, groups map[string]*inventory.Group) ([]string, error) {
-// 	limit_err := &LimitValidationError{Limit: limit}
-// 	var hosts_limited []string
-// 	not_groups := divideByToken(limit, Not)
-// 	for i := len(not_groups) - 1; i >= 1; i-- {
-// 		or_groups := divideByToken(not_groups[i], Or)
-// 		for i := len(or_groups) - 1; i >= 1; i-- {
-// 			and_groups := divideByToken(or_groups[i], And)
-// 			fmt.Println(and_groups)
-// 			and_intersection, err := getHostsByName(and_groups[len(and_groups)-1], groups)
-// 			if err != nil {
-// 				limit_err.Err = err
-// 				return nil, limit_err
-// 			}
-// 			for i := len(and_groups) - 2; i >= 0; i-- {
-// 				and_host, err := getHostsByName(and_groups[i], groups)
-// 				if err != nil {
-// 					limit_err.Err = err
-// 					return nil, limit_err
-// 				}
-// 				and_intersection = And.Apply(and_intersection, and_host, 0)
-// 			}
-// 		}
-// 	}
-// 	return hosts_limited, nil
-// }
-
 func expressionParse(limit string, groups map[string]*inventory.Group) ([]string, error) {
-	limitErr := &LimitValidationError{Limit: limit}
-	var hostsLimited []string
+	limit_err := &LimitValidationError{Limit: limit}
+	var hosts_limited []string
 	tokens := []Token{Not, Or, And}
 
 	var applyOperations func(string) ([]string, error)
 	applyOperations = func(expression string) ([]string, error) {
-		fmt.Println("EXPRESSION: ", expression)
 		var result []string
-		var re = regexp.MustCompile(`NOT|OR|AND`)
+		re := regexp.MustCompile(`NOT|OR|AND`)
 		if !re.MatchString(expression) {
-			sole_name := expression
-			sole_hosts, err := getHostsByName(sole_name, groups)
+			sole_result, err := getHostsByName(expression, groups)
 			if err != nil {
 				return nil, err
 			}
-			result = append(result, sole_hosts...)
-			return result, nil
+			return append(result, sole_result...), nil
 		}
 		for _, token := range tokens {
 			sub_exprs := divideByToken(expression, token)
 			switch token {
 			case Not:
 				if len(sub_exprs) > 1 {
-					not_name := sub_exprs[0]
-					not_hosts, err := getHostsByName(not_name, groups)
+					sub_result_first, err := applyOperations(sub_exprs[0])
 					if err != nil {
 						return nil, err
 					}
-					sub_result, err := applyOperations(sub_exprs[1])
+					sub_result_remainder, err := applyOperations(sub_exprs[1])
 					if err != nil {
 						return nil, err
 					}
-					result = Not.Apply(not_hosts, sub_result)
+					result = Not.Apply(sub_result_first, sub_result_remainder)
+					return result, nil
 				}
 			case Or:
 				if len(sub_exprs) > 1 {
-					or_name := sub_exprs[0]
-					or_hosts, err := getHostsByName(or_name, groups)
+					sub_result_first, err := applyOperations(sub_exprs[0])
 					if err != nil {
 						return nil, err
 					}
-					sub_result, err := applyOperations(sub_exprs[1])
+					sub_result_remainder, err := applyOperations(sub_exprs[1])
 					if err != nil {
 						return nil, err
 					}
-					result = Or.Apply(or_hosts, sub_result)
+					result = Or.Apply(sub_result_first, sub_result_remainder)
+					return result, nil
 				}
 			case And:
 				if len(sub_exprs) > 1 {
-					and_name := sub_exprs[0]
-					and_hosts, err := getHostsByName(and_name, groups)
+					sub_result_first, err := applyOperations(sub_exprs[0])
 					if err != nil {
 						return nil, err
 					}
-					sub_result, err := applyOperations(sub_exprs[1])
+					sub_result_remainder, err := applyOperations(sub_exprs[1])
 					if err != nil {
 						return nil, err
 					}
-					result = And.Apply(and_hosts, sub_result)
+					result = And.Apply(sub_result_first, sub_result_remainder)
+					return result, nil
 				}
 			}
 		}
@@ -224,20 +172,30 @@ func expressionParse(limit string, groups map[string]*inventory.Group) ([]string
 	}
 
 	// Call the recursive function to apply operations
-	hostsLimited, err := applyOperations(limit)
+	hosts_limited, err := applyOperations(limit)
 	if err != nil {
-		limitErr.Err = err
-		return nil, limitErr
+		limit_err.Err = err
+		return nil, limit_err
 	}
 
-	return hostsLimited, nil
+	return hosts_limited, nil
 }
 
 func getHostsGivenLimit(limit string, groups map[string]*inventory.Group) (map[string]*inventory.Host, error) {
-	var matching_hosts map[string]*inventory.Host
-	_, err := expressionParse(limit, groups)
+	// limit_err := &LimitValidationError{Limit: limit}
+	var hosts_limited map[string]*inventory.Host
+	hosts, err := expressionParse(limit, groups)
+	fmt.Println(hosts)
 	if err != nil {
 		return nil, err
 	}
-	return matching_hosts, nil
+	// for _, host_name := range hosts {
+	// 	host, exists := state.Inventory.GetHost(host_name)
+	// 	if !exists {
+	// 		limit_err.Err = fmt.Errorf("could not find (%s) in inventory")
+	// 		return nil, limit_err
+	// 	}
+	// 	hosts_limited[host_name] = host
+	// }
+	return hosts_limited, nil
 }

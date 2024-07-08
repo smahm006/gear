@@ -65,6 +65,11 @@ func (h *Host) IsLocal() bool {
 	return h.Name == "127.0.0.1"
 }
 
+func (h *Host) Getvar(name string) interface{} {
+	varr := h.Variables[name]
+	return varr
+}
+
 func (h *Host) Getenv(name string) string {
 	env := h.Environment[name]
 	return env
