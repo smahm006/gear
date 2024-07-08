@@ -3,8 +3,10 @@ package playbook
 import (
 	"fmt"
 	"regexp"
+	"slices"
 	"strings"
 
+	"github.com/smahm006/gear/src/common"
 	"github.com/smahm006/gear/src/inventory"
 )
 
@@ -67,28 +69,20 @@ func (t Token) Apply(slice1 []string, slice2 []string) []string {
 	return nil
 }
 
-func getHostsByName(name string, groups map[string]*inventory.Group) ([]string, error) {
-	var hosts []string
-	if group, exists := groups[name]; exists {
-		for host_name := range group.Hosts {
-			hosts = append(hosts, host_name)
-		}
-		return hosts, nil
-	}
-	for _, group := range groups {
-		if group.SubGroups != nil {
-			sub_group_hosts, err := getHostsByName(name, group.SubGroups)
-			if err == nil {
-				hosts = append(hosts, sub_group_hosts...)
-				return hosts, nil
-			}
-		}
-		if host, exists := group.GetHost(name); exists {
-			hosts = append(hosts, host.Name)
+func getHostsByName(name string, state *common.RunState, play *Play) ([]string, error) {
+	if slices.Contains(play.Groups, name) {
+		if hosts, exists := state.Inventory.GroupHostsMembership.GroupToHosts[name]; exists {
 			return hosts, nil
 		}
 	}
-	return nil, fmt.Errorf("no group or host (%s) referenced in limit found", name)
+	if groups, exists := state.Inventory.GroupHostsMembership.HostsToGroup[name]; exists {
+		for _, gname := range groups {
+			if slices.Contains(play.Groups, gname) {
+				return []string{name}, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("no group or hosts found for (%s) referenced in limit found", name)
 }
 
 func divideByToken(limit string, token Token) []string {
@@ -108,7 +102,7 @@ func divideByToken(limit string, token Token) []string {
 	return parts
 }
 
-func expressionParse(limit string, groups map[string]*inventory.Group) ([]string, error) {
+func expressionParse(limit string, state *common.RunState, play *Play) ([]string, error) {
 	limit_err := &LimitValidationError{Limit: limit}
 	var hosts_limited []string
 	tokens := []Token{Not, Or, And}
@@ -118,7 +112,7 @@ func expressionParse(limit string, groups map[string]*inventory.Group) ([]string
 		var result []string
 		re := regexp.MustCompile(`NOT|OR|AND`)
 		if !re.MatchString(expression) {
-			sole_result, err := getHostsByName(expression, groups)
+			sole_result, err := getHostsByName(expression, state, play)
 			if err != nil {
 				return nil, err
 			}
@@ -181,21 +175,14 @@ func expressionParse(limit string, groups map[string]*inventory.Group) ([]string
 	return hosts_limited, nil
 }
 
-func getHostsGivenLimit(limit string, groups map[string]*inventory.Group) (map[string]*inventory.Host, error) {
-	// limit_err := &LimitValidationError{Limit: limit}
-	var hosts_limited map[string]*inventory.Host
-	hosts, err := expressionParse(limit, groups)
-	fmt.Println(hosts)
+func getHostsGivenLimit(limit string, state *common.RunState, play *Play) (map[string]*inventory.Host, error) {
+	hosts_limited := make(map[string]*inventory.Host)
+	hosts, err := expressionParse(limit, state, play)
 	if err != nil {
 		return nil, err
 	}
-	// for _, host_name := range hosts {
-	// 	host, exists := state.Inventory.GetHost(host_name)
-	// 	if !exists {
-	// 		limit_err.Err = fmt.Errorf("could not find (%s) in inventory")
-	// 		return nil, limit_err
-	// 	}
-	// 	hosts_limited[host_name] = host
-	// }
+	for _, host_name := range hosts {
+		hosts_limited[host_name], _ = state.Inventory.GetHost(host_name)
+	}
 	return hosts_limited, nil
 }

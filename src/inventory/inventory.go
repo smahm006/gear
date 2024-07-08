@@ -194,11 +194,22 @@ func (i *Inventory) LoadInventory(path string) error {
 					host.Environment[key] = value
 				}
 			}
+			for key, value := range group.Variables {
+				for _, host := range group.Hosts {
+					host.Variables[key] = value
+				}
+			}
 			for _, parentgroup := range group.ParentGroups {
 				for key, value := range parentgroup.Environment {
 					group.Environment[key] = value
 					for _, host := range group.Hosts {
 						host.Environment[key] = value
+					}
+				}
+				for key, value := range parentgroup.Variables {
+					group.Variables[key] = value
+					for _, host := range group.Hosts {
+						host.Variables[key] = value
 					}
 				}
 			}

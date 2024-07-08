@@ -19,8 +19,8 @@ func validateGroups(inventory *inventory.Inventory, play *Play) error {
 	for _, group_name := range play.Groups {
 		if group_name == "all" {
 			var groups []string
-			for k := range inventory.Groups {
-				groups = append(groups, k)
+			for group_name := range inventory.Groups {
+				groups = append(groups, group_name)
 			}
 			play.Groups = groups
 			break
@@ -34,6 +34,12 @@ func validateGroups(inventory *inventory.Inventory, play *Play) error {
 	return nil
 }
 
-func validateHosts(inventory *inventory.Inventory, play *Play) error {
+func validateHosts(hosts map[string]*inventory.Host, play *Play) error {
+	if len(hosts) == 0 {
+		return &PlayValidationError{
+			Name: play.Name,
+			Err:  fmt.Errorf("no hosts selected by groups in play"),
+		}
+	}
 	return nil
 }

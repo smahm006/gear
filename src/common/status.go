@@ -10,10 +10,9 @@ type RunStatus struct {
 	ConnectionCache *connection.ConnectionCache
 	Hosts           map[string]*inventory.Host
 	FailedHosts     map[string]*inventory.Host
-	Variables       map[string]interface{}
 }
 
-func NewRunStatus(hosts map[string]*inventory.Host, vars map[string]interface{}) *RunStatus {
+func NewRunStatus(hosts map[string]*inventory.Host) *RunStatus {
 	return &RunStatus{
 		ConnectionCache: connection.NewConnectionCache(),
 	}

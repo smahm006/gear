@@ -50,14 +50,16 @@ func (p *Playbook) LoadPlaybook(cli *cmd.CliParser, inventory *inventory.Invento
 
 func (p *Playbook) RunPlaybook(cli *cmd.CliParser, i *inventory.Inventory) error {
 	state := common.NewRunState(cli, i)
-	for i := range *p {
-		play := &(*p)[i]
+	for index := range *p {
+		play := &(*p)[index]
 		collected_hosts, err := collectHosts(state, play)
 		if err != nil {
 			return err
 		}
-		collected_vars := collectVars(state, play)
-		status := common.NewRunStatus(collected_hosts, collected_vars)
+		if err = validateHosts(collected_hosts, play); err != nil {
+			return err
+		}
+		status := common.NewRunStatus(collected_hosts)
 		for _, pre_task := range play.PreTasks {
 			pre_task.RunTask(status)
 		}
