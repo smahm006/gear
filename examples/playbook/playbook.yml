@@ -1,6 +1,7 @@
 - name: setup laptop
   groups:
-  - all
+  - local
+  - servers
   pre:
    - !shell
      cmd: "ls -la"

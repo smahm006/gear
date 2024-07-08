@@ -1,6 +1,8 @@
 package tasks
 
 import (
+	"fmt"
+
 	"github.com/smahm006/gear/src/common"
 	"github.com/smahm006/gear/src/modules"
 	"gopkg.in/yaml.v3"
@@ -37,5 +39,5 @@ func (t *Task) UnmarshalYAML(value *yaml.Node) error {
 }
 
 func (t *Task) RunTask(status *common.RunStatus) {
-	return
+	fmt.Println("running some task")
 }

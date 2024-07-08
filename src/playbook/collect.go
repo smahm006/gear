@@ -5,24 +5,24 @@ import (
 	"github.com/smahm006/gear/src/inventory"
 )
 
-func collectHosts(state *common.RunState, play *Play) map[string]*inventory.Host {
+func collectHosts(state *common.RunState, play *Play) (map[string]*inventory.Host, error) {
+	var err error
 	collective_hosts := make(map[string]*inventory.Host)
 	limited := len(state.ParsedFlags.Limit) != 0
 	if !limited {
 		for _, group_name := range play.Groups {
-			group, _ := state.Inventory.GetGroup(group_name)
-			for k, v := range group.Hosts {
-				collective_hosts[k] = v
+			hosts := state.Inventory.GroupHostsMembership.GroupToHosts[group_name]
+			for _, host_name := range hosts {
+				host, _ := state.Inventory.GetHost(host_name)
+				collective_hosts[host_name] = host
 			}
 		}
+		return collective_hosts, nil
 	} else {
-
+		collective_hosts, err = getHostsGivenLimit(state.ParsedFlags.Limit, state, play)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return collective_hosts
-}
-
-func collectVars(state *common.RunState, play *Play) map[string]interface{} {
-	collective_vars := make(map[string]interface{})
-	// Start with inventory vars
-	return collective_vars
+	return collective_hosts, nil
 }
