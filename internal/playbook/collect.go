@@ -1,11 +1,11 @@
 package playbook
 
 import (
-	"github.com/smahm006/gear/src/common"
-	"github.com/smahm006/gear/src/inventory"
+	"github.com/smahm006/gear/internal/inventory"
+	"github.com/smahm006/gear/internal/state"
 )
 
-func collectHosts(state *common.RunState, play *Play) (map[string]*inventory.Host, error) {
+func collectHosts(state *state.RunState, play *Play) (map[string]*inventory.Host, error) {
 	var err error
 	collective_hosts := make(map[string]*inventory.Host)
 	limited := len(state.ParsedFlags.Limit) != 0

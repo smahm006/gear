@@ -1,6 +1,6 @@
 package connection
 
-import "github.com/smahm006/gear/src/inventory"
+import "github.com/smahm006/gear/internal/inventory"
 
 type ConnectionCache struct {
 	connections map[string]Connection

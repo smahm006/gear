@@ -1,8 +1,8 @@
-package common
+package state
 
 import (
-	"github.com/smahm006/gear/src/connection"
-	"github.com/smahm006/gear/src/inventory"
+	"github.com/smahm006/gear/internal/connection"
+	"github.com/smahm006/gear/internal/inventory"
 )
 
 // Status - The situation at a particular time during a process. ‘an update on the status of the bill’

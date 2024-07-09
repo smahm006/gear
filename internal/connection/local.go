@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/smahm006/gear/src/inventory"
-	"github.com/smahm006/gear/src/utils"
+	"github.com/smahm006/gear/internal/inventory"
+	"github.com/smahm006/gear/internal/utils"
 )
 
 type LocalConnection struct {

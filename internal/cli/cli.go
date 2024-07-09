@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 func NewGearCommand() (*CliParser, error) {
 	var cmd CliParser

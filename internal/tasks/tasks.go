@@ -1,9 +1,9 @@
 package tasks
 
 import (
-	"github.com/smahm006/gear/src/common"
-	"github.com/smahm006/gear/src/modules"
-	"github.com/smahm006/gear/src/utils"
+	"github.com/smahm006/gear/internal/modules"
+	"github.com/smahm006/gear/internal/state"
+	"github.com/smahm006/gear/internal/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -55,7 +55,7 @@ func (t *Tasks) LoadTasks(path string) error {
 	return nil
 }
 
-func (t *Tasks) RunTasks(status *common.RunStatus) error {
+func (t *Tasks) RunTasks(status *state.RunStatus) error {
 	for _, task := range *t {
 		task.RunTask(status)
 	}

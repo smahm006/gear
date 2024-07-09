@@ -1,6 +1,6 @@
 package modules
 
-import "github.com/smahm006/gear/src/common"
+import "github.com/smahm006/gear/internal/state"
 
 type ShellModule struct {
 	Cmd         string `yaml:"cmd"`
@@ -12,7 +12,7 @@ type ShellModule struct {
 func (s *ShellModule) Run() {
 }
 
-func (s *ShellModule) Query() common.TaskRequest {
-	var request common.TaskRequest
+func (s *ShellModule) Query() state.TaskRequest {
+	var request state.TaskRequest
 	return request
 }

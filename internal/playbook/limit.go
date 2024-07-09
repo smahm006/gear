@@ -6,8 +6,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/smahm006/gear/src/common"
-	"github.com/smahm006/gear/src/inventory"
+	"github.com/smahm006/gear/internal/inventory"
+	"github.com/smahm006/gear/internal/state"
 )
 
 type LimitValidationError struct {
@@ -69,7 +69,7 @@ func (t Token) Apply(slice1 []string, slice2 []string) []string {
 	return nil
 }
 
-func getHostsByName(name string, state *common.RunState, play *Play) ([]string, error) {
+func getHostsByName(name string, state *state.RunState, play *Play) ([]string, error) {
 	if slices.Contains(play.Groups, name) {
 		if hosts, exists := state.Inventory.GroupHostsMembership.GroupToHosts[name]; exists {
 			return hosts, nil
@@ -102,7 +102,7 @@ func divideByToken(limit string, token Token) []string {
 	return parts
 }
 
-func expressionParse(limit string, state *common.RunState, play *Play) ([]string, error) {
+func expressionParse(limit string, state *state.RunState, play *Play) ([]string, error) {
 	limit_err := &LimitValidationError{Limit: limit}
 	var hosts_limited []string
 	tokens := []Token{Not, Or, And}
@@ -175,7 +175,7 @@ func expressionParse(limit string, state *common.RunState, play *Play) ([]string
 	return hosts_limited, nil
 }
 
-func getHostsGivenLimit(limit string, state *common.RunState, play *Play) (map[string]*inventory.Host, error) {
+func getHostsGivenLimit(limit string, state *state.RunState, play *Play) (map[string]*inventory.Host, error) {
 	hosts_limited := make(map[string]*inventory.Host)
 	hosts, err := expressionParse(limit, state, play)
 	if err != nil {

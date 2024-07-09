@@ -3,12 +3,12 @@ package modules
 import (
 	"fmt"
 
-	"github.com/smahm006/gear/src/common"
+	"github.com/smahm006/gear/internal/state"
 	"gopkg.in/yaml.v3"
 )
 
 type Module interface {
-	Query() common.TaskRequest
+	Query() state.TaskRequest
 	Run()
 }
 

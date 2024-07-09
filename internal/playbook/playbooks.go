@@ -1,12 +1,11 @@
 package playbook
 
 import (
-	"github.com/smahm006/gear/src/cmd"
-	"github.com/smahm006/gear/src/common"
-	"github.com/smahm006/gear/src/inventory"
-	"github.com/smahm006/gear/src/roles"
-	"github.com/smahm006/gear/src/tasks"
-	"github.com/smahm006/gear/src/utils"
+	"github.com/smahm006/gear/internal/inventory"
+	"github.com/smahm006/gear/internal/roles"
+	"github.com/smahm006/gear/internal/state"
+	"github.com/smahm006/gear/internal/tasks"
+	"github.com/smahm006/gear/internal/utils"
 	"gopkg.in/yaml.v3"
 )
 
@@ -49,17 +48,17 @@ func (p *Playbook) LoadPlaybook(cli *cmd.CliParser, inventory *inventory.Invento
 }
 
 func (p *Playbook) RunPlaybook(cli *cmd.CliParser, i *inventory.Inventory) error {
-	state := common.NewRunState(cli, i)
+	run_state := state.NewRunState(cli, i)
 	for index := range *p {
 		play := &(*p)[index]
-		collected_hosts, err := collectHosts(state, play)
+		collected_hosts, err := collectHosts(run_state, play)
 		if err != nil {
 			return err
 		}
 		if err = validateHosts(collected_hosts, play); err != nil {
 			return err
 		}
-		status := common.NewRunStatus(collected_hosts)
+		status := run_state.NewRunStatus(collected_hosts)
 		for _, pre_task := range play.PreTasks {
 			pre_task.RunTask(status)
 		}

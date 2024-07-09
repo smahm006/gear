@@ -1,8 +1,7 @@
-package common
+package state
 
 import (
-	"github.com/smahm006/gear/src/cmd"
-	"github.com/smahm006/gear/src/inventory"
+	"github.com/smahm006/gear/internal/inventory"
 )
 
 // State - The particular condition that someone or something is in at a specific time. ‘the state of the company's finances’

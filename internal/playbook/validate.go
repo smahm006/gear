@@ -3,7 +3,7 @@ package playbook
 import (
 	"fmt"
 
-	"github.com/smahm006/gear/src/inventory"
+	"github.com/smahm006/gear/internal/inventory"
 )
 
 type PlayValidationError struct {

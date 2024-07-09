@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/smahm006/gear/src/utils"
+	"github.com/smahm006/gear/internal/utils"
 )
 
 type InventoryValidationError struct {

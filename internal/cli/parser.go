@@ -1,4 +1,4 @@
-package cmd
+package cli
 
 import (
 	"flag"
@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/smahm006/gear/src/utils"
+	"github.com/smahm006/gear/internal/utils"
 )
 
 type CliParser struct {

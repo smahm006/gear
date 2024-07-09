@@ -3,10 +3,10 @@ package main
 import (
 	"os"
 
-	"github.com/smahm006/gear/src/cmd"
-	"github.com/smahm006/gear/src/inventory"
-	"github.com/smahm006/gear/src/playbook"
-	"github.com/smahm006/gear/src/utils"
+	"github.com/smahm006/gear/internal/cli"
+	"github.com/smahm006/gear/internal/inventory"
+	"github.com/smahm006/gear/internal/playbook"
+	"github.com/smahm006/gear/internal/utils"
 )
 
 func main() {
@@ -14,16 +14,16 @@ func main() {
 }
 
 func entrypoint() error {
-	cli, err := cmd.NewGearCommand()
+	cli, err := cli.NewGearCommand()
 	if err != nil {
 		return err
 	}
 	if len(os.Args) == 1 || os.Args[1] == "help" || cli.Help {
-		cmd.ShowUsage()
+		cli.ShowUsage()
 		return nil
 	}
 	if os.Args[1] == "version" || cli.Version {
-		cmd.ShowVersion()
+		cli.ShowVersion()
 		return nil
 	}
 	i := inventory.NewInventory()

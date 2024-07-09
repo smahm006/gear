@@ -3,8 +3,8 @@ package roles
 import (
 	"fmt"
 
-	"github.com/smahm006/gear/src/common"
-	"github.com/smahm006/gear/src/tasks"
+	"github.com/smahm006/gear/internal/state"
+	"github.com/smahm006/gear/internal/tasks"
 	"gopkg.in/yaml.v3"
 )
 
@@ -45,7 +45,7 @@ func (r *Role) LoadRole() error {
 	return nil
 }
 
-func (r *Role) RunRole(status *common.RunStatus) error {
+func (r *Role) RunRole(status *state.RunStatus) error {
 	var err error
 	for _, r_task := range r.Tasks {
 		task_path := fmt.Sprintf("%s/tasks/%s", r.Path, r_task)

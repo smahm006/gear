@@ -3,10 +3,10 @@ package tasks
 import (
 	"fmt"
 
-	"github.com/smahm006/gear/src/common"
+	"github.com/smahm006/gear/internal/state"
 )
 
-// func (t *Task) RunTask(status *common.RunStatus) {
+// func (t *Task) RunTask(status *state.RunStatus) {
 // 	out_chan := make(chan string)
 // 	var wg_command sync.WaitGroup
 // 	var wg_processing sync.WaitGroup
@@ -39,7 +39,7 @@ import (
 // 	wg_processing.Wait()
 // }
 
-func (t *Task) RunTask(status *common.RunStatus) {
+func (t *Task) RunTask(status *state.RunStatus) {
 	for _, host := range status.Hosts {
 		connection, err := status.ConnectionCache.GetConnection(host)
 		if err != nil {
