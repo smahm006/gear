@@ -14,27 +14,27 @@ func main() {
 }
 
 func entrypoint() error {
-	cli, err := cli.NewGearCommand()
+	cmd, err := cli.NewGearCommand()
 	if err != nil {
 		return err
 	}
-	if len(os.Args) == 1 || os.Args[1] == "help" || cli.Help {
+	if len(os.Args) == 1 || os.Args[1] == "help" || cmd.Help {
 		cli.ShowUsage()
 		return nil
 	}
-	if os.Args[1] == "version" || cli.Version {
+	if os.Args[1] == "version" || cmd.Version {
 		cli.ShowVersion()
 		return nil
 	}
 	i := inventory.NewInventory()
-	if err = i.LoadInventory(cli.InventoryPath); err != nil {
+	if err = i.LoadInventory(cmd.InventoryPath); err != nil {
 		return err
 	}
 	p := playbook.NewPlaybook()
-	if err = p.LoadPlaybook(cli, i); err != nil {
+	if err = p.LoadPlaybook(cmd, i); err != nil {
 		return err
 	}
-	if err = p.RunPlaybook(cli, i); err != nil {
+	if err = p.RunPlaybook(cmd, i); err != nil {
 		return err
 	}
 	return nil

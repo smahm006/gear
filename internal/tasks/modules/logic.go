@@ -1,4 +1,4 @@
-package tasks
+package modules
 
 type PreTaskLogic struct {
 	Conditions string   `yaml:"conditions"`

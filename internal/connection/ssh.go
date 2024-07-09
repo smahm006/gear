@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/sftp"
 	"github.com/smahm006/gear/internal/inventory"
+	"github.com/smahm006/gear/internal/tasks/requonse"
 	"github.com/smahm006/gear/internal/utils"
 	"golang.org/x/crypto/ssh"
 )
@@ -124,8 +125,8 @@ func (s *SshConnection) WhoAmI() (string, error) {
 	return user, nil
 }
 
-func (s *SshConnection) Execute(string) (string, error) {
-	return "", nil
+func (s *SshConnection) Execute(string) *requonse.TaskResponse {
+	return nil
 }
 
 func (s *SshConnection) CopyFile(src string, dst string) error {

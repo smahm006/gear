@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/smahm006/gear/internal/inventory"
-	"github.com/smahm006/gear/internal/state"
+	"github.com/smahm006/gear/internal/playbook/state"
 )
 
 type LimitValidationError struct {

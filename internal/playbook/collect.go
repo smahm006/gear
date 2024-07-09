@@ -2,7 +2,7 @@ package playbook
 
 import (
 	"github.com/smahm006/gear/internal/inventory"
-	"github.com/smahm006/gear/internal/state"
+	"github.com/smahm006/gear/internal/playbook/state"
 )
 
 func collectHosts(state *state.RunState, play *Play) (map[string]*inventory.Host, error) {

@@ -1,8 +1,8 @@
 package tasks
 
 import (
-	"github.com/smahm006/gear/internal/modules"
-	"github.com/smahm006/gear/internal/state"
+	"github.com/smahm006/gear/internal/playbook/state"
+	"github.com/smahm006/gear/internal/tasks/modules"
 	"github.com/smahm006/gear/internal/utils"
 	"gopkg.in/yaml.v3"
 )
@@ -11,8 +11,8 @@ type Task struct {
 	Tag    string
 	Name   string `yaml:"name"`
 	Module modules.Module
-	With   PreTaskLogic  `yaml:"with"`
-	And    PostTaskLogic `yaml:"and"`
+	With   modules.PreTaskLogic  `yaml:"with"`
+	And    modules.PostTaskLogic `yaml:"and"`
 }
 
 // Need custom unmarshal logic for different modules
@@ -55,9 +55,9 @@ func (t *Tasks) LoadTasks(path string) error {
 	return nil
 }
 
-func (t *Tasks) RunTasks(status *state.RunStatus) error {
+func (t *Tasks) RunTasks(run_status *state.RunStatus) error {
 	for _, task := range *t {
-		task.RunTask(status)
+		task.RunTask(run_status)
 	}
 	return nil
 }

@@ -34,8 +34,8 @@ func NewInventory() *Inventory {
 // a single string or a list of strings, each with the option of having it's own
 // variables and environment.
 func (i *Inventory) LoadInventory(path string) error {
-	var GroupToHosts = i.GroupHostsMembership.GroupToHosts
-	var HostsToGrops = i.GroupHostsMembership.HostsToGroup
+	GroupToHosts := i.GroupHostsMembership.GroupToHosts
+	HostsToGrops := i.GroupHostsMembership.HostsToGroup
 	var processGroups func(gname string, gdata interface{}, parent *Group) (*Group, error)
 	processGroups = func(gname string, gdata interface{}, parent *Group) (*Group, error) {
 		group := NewGroup(gname)
@@ -172,7 +172,7 @@ func (i *Inventory) LoadInventory(path string) error {
 		}
 		// Add top level groups
 		i.Groups[gname] = group
-		for host_name, _ := range group.Hosts {
+		for host_name := range group.Hosts {
 			GroupToHosts[group.Name] = append(GroupToHosts[group.Name], host_name)
 			HostsToGrops[host_name] = append(HostsToGrops[host_name], group.Name)
 		}

@@ -3,7 +3,7 @@ package tasks
 import (
 	"fmt"
 
-	"github.com/smahm006/gear/internal/state"
+	"github.com/smahm006/gear/internal/playbook/state"
 )
 
 // func (t *Task) RunTask(status *state.RunStatus) {
@@ -49,11 +49,10 @@ func (t *Task) RunTask(status *state.RunStatus) {
 			fmt.Println(err)
 			return
 		}
-		out, err := connection.Execute("echo $CANYOUSEEME")
-		if err != nil {
-			fmt.Println(err)
+		ret := connection.Execute("echo $CANYOUSEEME")
+		if ret.CommandResult.Rc != 0 {
+			fmt.Println(ret.CommandResult.Err)
+			return
 		}
-		fmt.Println(out)
-
 	}
 }

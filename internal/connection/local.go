@@ -5,8 +5,10 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 
 	"github.com/smahm006/gear/internal/inventory"
+	"github.com/smahm006/gear/internal/tasks/requonse"
 	"github.com/smahm006/gear/internal/utils"
 )
 
@@ -33,9 +35,8 @@ func (l *LocalConnection) Connect() error {
 	if l.Session != nil {
 		return nil
 	}
-	cmd = exec.Command("env", "sh", "-c", "uname -r")
+	cmd = exec.Command("env", "sh", "-c", "uname")
 	out, err := cmd.Output()
-	fmt.Println(string(out))
 	if err != nil {
 		return err
 	} else {
@@ -43,7 +44,6 @@ func (l *LocalConnection) Connect() error {
 	}
 	cmd = exec.Command("env", "sh", "-c", "cat /etc/*release")
 	out, err = cmd.Output()
-	fmt.Println(string(out))
 	if err != nil {
 		return err
 	} else {
@@ -71,22 +71,43 @@ func (l *LocalConnection) WhoAmI() (string, error) {
 	return user, nil
 }
 
-func (l *LocalConnection) Execute(command string) (string, error) {
-	stdout_buffer := new(strings.Builder)
-	stderr_buffer := new(strings.Builder)
-	l.Session.Stdout = stdout_buffer
-	l.Session.Stderr = stderr_buffer
-	l.Session.Path = "/bin/env"
-	l.Session.Args = []string{"/bin/env", "sh", "-c", command}
+func (l *LocalConnection) Execute(command string) *requonse.TaskResponse {
+	var outbuf, errbuf strings.Builder
+	var exitcode int
+	response := requonse.NewTaskResponse()
+	l.Session.Path = "/usr/bin/env"
+	l.Session.Stdout = &outbuf
+	l.Session.Stderr = &errbuf
+	l.Session.Args = []string{"/usr/bin/env", "sh", "-c", fmt.Sprintf("LANG=C %s", command)}
 	err := l.Session.Run()
+	stdout := outbuf.String()
+	stderr := errbuf.String()
 	if err != nil {
-		return "", err
+		response.Type = requonse.Failed
+		if exit_error, ok := err.(*exec.ExitError); ok {
+			ws := exit_error.Sys().(syscall.WaitStatus)
+			exitcode = ws.ExitStatus()
+		} else {
+			exitcode = default_exit_code
+			if stderr == "" {
+				stderr = fmt.Sprintf(err.Error())
+			}
+		}
+	} else {
+		ws := l.Session.ProcessState.Sys().(syscall.WaitStatus)
+		exitcode = ws.ExitStatus()
+	}
+	response.CommandResult = &requonse.CommandResult{
+		Cmd: command,
+		Out: stdout,
+		Err: stderr,
+		Rc:  exitcode,
 	}
 	l.Session.Stdout = nil
 	l.Session.Stderr = nil
 	l.Session.Process = nil
 	l.Session.ProcessState = nil
-	return stdout_buffer.String(), nil
+	return response
 }
 
 func (l *LocalConnection) CopyFile(src string, dst string) error {

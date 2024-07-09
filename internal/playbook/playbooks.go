@@ -1,9 +1,10 @@
 package playbook
 
 import (
+	"github.com/smahm006/gear/internal/cli"
 	"github.com/smahm006/gear/internal/inventory"
+	"github.com/smahm006/gear/internal/playbook/state"
 	"github.com/smahm006/gear/internal/roles"
-	"github.com/smahm006/gear/internal/state"
 	"github.com/smahm006/gear/internal/tasks"
 	"github.com/smahm006/gear/internal/utils"
 	"gopkg.in/yaml.v3"
@@ -28,7 +29,7 @@ func NewPlaybook() *Playbook {
 	return &Playbook{}
 }
 
-func (p *Playbook) LoadPlaybook(cli *cmd.CliParser, inventory *inventory.Inventory) error {
+func (p *Playbook) LoadPlaybook(cli *cli.CliParser, inventory *inventory.Inventory) error {
 	yaml_data, err := utils.ReadFile(cli.PlaybookPath)
 	if err != nil {
 		return err
@@ -47,7 +48,7 @@ func (p *Playbook) LoadPlaybook(cli *cmd.CliParser, inventory *inventory.Invento
 	return nil
 }
 
-func (p *Playbook) RunPlaybook(cli *cmd.CliParser, i *inventory.Inventory) error {
+func (p *Playbook) RunPlaybook(cli *cli.CliParser, i *inventory.Inventory) error {
 	run_state := state.NewRunState(cli, i)
 	for index := range *p {
 		play := &(*p)[index]
@@ -58,21 +59,21 @@ func (p *Playbook) RunPlaybook(cli *cmd.CliParser, i *inventory.Inventory) error
 		if err = validateHosts(collected_hosts, play); err != nil {
 			return err
 		}
-		status := run_state.NewRunStatus(collected_hosts)
+		run_status := state.NewRunStatus(collected_hosts)
 		for _, pre_task := range play.PreTasks {
-			pre_task.RunTask(status)
+			pre_task.RunTask(run_status)
 		}
 		for _, p_role := range play.Roles {
 			role := roles.NewRole(p_role.Name, p_role.Variables, p_role.Tags)
 			if err = role.LoadRole(); err != nil {
 				return err
 			}
-			if err = role.RunRole(status); err != nil {
+			if err = role.RunRole(run_status); err != nil {
 				return err
 			}
 		}
 		for _, post_task := range play.PostTasks {
-			post_task.RunTask(status)
+			post_task.RunTask(run_status)
 		}
 	}
 	return nil

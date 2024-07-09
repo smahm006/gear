@@ -3,14 +3,8 @@ package modules
 import (
 	"fmt"
 
-	"github.com/smahm006/gear/internal/state"
 	"gopkg.in/yaml.v3"
 )
-
-type Module interface {
-	Query() state.TaskRequest
-	Run()
-}
 
 func MapTagToModule(tag string, value *yaml.Node) (Module, error) {
 	var m Module
