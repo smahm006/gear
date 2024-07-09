@@ -18,7 +18,7 @@ func entrypoint() error {
 	if err != nil {
 		return err
 	}
-	if len(os.Args) == 1 || cli.Help {
+	if len(os.Args) == 1 || os.Args[1] == "help" || cli.Help {
 		cmd.ShowUsage()
 		return nil
 	}

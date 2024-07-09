@@ -15,5 +15,6 @@ type RunStatus struct {
 func NewRunStatus(hosts map[string]*inventory.Host) *RunStatus {
 	return &RunStatus{
 		ConnectionCache: connection.NewConnectionCache(),
+		Hosts:           hosts,
 	}
 }

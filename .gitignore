@@ -1,1 +1,3 @@
 /src/cmd/version.go
+/vagrant/*
+!/vagrant/Vagrantfile

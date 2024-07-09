@@ -7,7 +7,9 @@ type ConnectionCache struct {
 }
 
 func NewConnectionCache() *ConnectionCache {
-	return &ConnectionCache{}
+	return &ConnectionCache{
+		connections: make(map[string]Connection),
+	}
 }
 
 func (cache *ConnectionCache) GetConnection(host *inventory.Host) (Connection, error) {

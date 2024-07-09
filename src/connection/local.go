@@ -17,8 +17,9 @@ type LocalConnection struct {
 
 func EnvMapToSlice(env_map map[string]string) []string {
 	var env []string
+	env = append(env, "PATH=/usr/sbin:/usr/bin:/sbin:/bin")
 	for k, v := range env_map {
-		env = append(env, "%s=%s", k, v)
+		env = append(env, fmt.Sprintf("%s=%s", k, v))
 	}
 	return env
 }
@@ -32,22 +33,24 @@ func (l *LocalConnection) Connect() error {
 	if l.Session != nil {
 		return nil
 	}
-	cmd = exec.Command("uname -r")
+	cmd = exec.Command("env", "sh", "-c", "uname -r")
 	out, err := cmd.Output()
+	fmt.Println(string(out))
 	if err != nil {
 		return err
 	} else {
 		l.Host.SetOs(string(out))
 	}
-	cmd = exec.Command("cat /etc/*release")
+	cmd = exec.Command("env", "sh", "-c", "cat /etc/*release")
 	out, err = cmd.Output()
+	fmt.Println(string(out))
 	if err != nil {
 		return err
 	} else {
 		l.Host.SetDistro(string(out))
 	}
-	cmd.Env = EnvMapToSlice(l.Host.Environment)
 	cmd = exec.Command("")
+	cmd.Env = EnvMapToSlice(l.Host.Environment)
 	l.Session = cmd
 	return nil
 }
@@ -68,23 +71,22 @@ func (l *LocalConnection) WhoAmI() (string, error) {
 	return user, nil
 }
 
-func (l *LocalConnection) Execute() error {
+func (l *LocalConnection) Execute(command string) (string, error) {
 	stdout_buffer := new(strings.Builder)
 	stderr_buffer := new(strings.Builder)
 	l.Session.Stdout = stdout_buffer
 	l.Session.Stderr = stderr_buffer
-	sh := "env sh"
-	l.Session.Path = sh
-	l.Session.Args = []string{sh, "-c"}
+	l.Session.Path = "/bin/env"
+	l.Session.Args = []string{"/bin/env", "sh", "-c", command}
 	err := l.Session.Run()
 	if err != nil {
-		return err
+		return "", err
 	}
 	l.Session.Stdout = nil
 	l.Session.Stderr = nil
 	l.Session.Process = nil
 	l.Session.ProcessState = nil
-	return nil
+	return stdout_buffer.String(), nil
 }
 
 func (l *LocalConnection) CopyFile(src string, dst string) error {

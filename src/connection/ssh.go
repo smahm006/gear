@@ -124,8 +124,8 @@ func (s *SshConnection) WhoAmI() (string, error) {
 	return user, nil
 }
 
-func (s *SshConnection) Execute() error {
-	return nil
+func (s *SshConnection) Execute(string) (string, error) {
+	return "", nil
 }
 
 func (s *SshConnection) CopyFile(src string, dst string) error {
