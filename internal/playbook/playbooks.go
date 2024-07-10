@@ -60,22 +60,23 @@ func (p *Playbook) RunPlaybook(cli *cli.CliParser, i *inventory.Inventory) error
 			return err
 		}
 		run_status := state.NewRunStatus(collected_hosts)
+		run_state.Status = run_status
 		for _, pre_task := range play.PreTasks {
-			pre_task.RunTask(run_status)
+			pre_task.RunTask(run_state)
 		}
 		for _, p_role := range play.Roles {
 			role := roles.NewRole(p_role.Name, p_role.Variables, p_role.Tags)
 			if err = role.LoadRole(); err != nil {
 				return err
 			}
-			if err = role.RunRole(run_status); err != nil {
+			if err = role.RunRole(run_state); err != nil {
 				return err
 			}
 		}
 		for _, post_task := range play.PostTasks {
-			post_task.RunTask(run_status)
+			post_task.RunTask(run_state)
 		}
-		CleanUpPlay(run_status)
+		CleanUpPlay(run_state.Status)
 	}
 	return nil
 }

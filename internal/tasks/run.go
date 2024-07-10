@@ -9,22 +9,22 @@ import (
 	"github.com/smahm006/gear/internal/tasks/exchange"
 )
 
-func (t *Task) RunTask(status *state.RunStatus) {
+func (t *Task) RunTask(state *state.RunState) {
 	resp_chan := make(chan *exchange.TaskResponse)
 	var wg_command sync.WaitGroup
 	var wg_processing sync.WaitGroup
-	for _, host := range status.Hosts {
-		fmt.Printf("running task on %s\n", host.Name)
+	for _, host := range state.Status.Hosts {
+		fmt.Printf("running task %s\n", t.Name)
 		wg_command.Add(1)
 		go func(host *inventory.Host, resp_chan chan *exchange.TaskResponse) {
 			defer wg_command.Done()
-			connection, err := status.ConnectionCache.GetConnection(host)
+			connection, err := state.Status.ConnectionCache.GetConnection(host)
 			if err != nil {
 				fmt.Println(err)
 			}
 			connection.Connect()
 			request := t.Module.Query()
-			response := t.Module.Run(request, connection)
+			response := t.Module.Run(connection, request, t.With, t.And)
 			if err != nil {
 				fmt.Println(err)
 			}

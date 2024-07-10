@@ -12,7 +12,7 @@ type ShellModule struct {
 	ChangedWhen string `yaml:"changed_when"`
 }
 
-func (s *ShellModule) Run(request *exchange.TaskRequest, connection connection.Connection) *exchange.TaskResponse {
+func (s *ShellModule) Run(connection connection.Connection, request *exchange.TaskRequest, with *ModuleWith, and *ModuleAnd) *exchange.TaskResponse {
 	var response *exchange.TaskResponse
 	response = connection.Execute(s.Cmd)
 	return response

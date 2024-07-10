@@ -1,6 +1,6 @@
 package modules
 
-type PreTaskLogic struct {
+type ModuleWith struct {
 	Conditions string   `yaml:"conditions"`
 	Sudo       bool     `yaml:"sudo"`
 	Items      []string `yaml:"items"`
@@ -8,7 +8,7 @@ type PreTaskLogic struct {
 	DelegateTo string   `yaml:"delegate_to"`
 }
 
-type PostTaskLogic struct {
+type ModuleAnd struct {
 	IgnoreErrors string `yaml:"ignore_erros"`
 	Retry        int    `yaml:"retry"`
 	Delay        int    `yaml:"delay"`

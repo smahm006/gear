@@ -18,3 +18,5 @@
 - !shell
   name: test 3
   cmd: "reboot"
+  with:
+    sudo: true

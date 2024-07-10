@@ -16,8 +16,8 @@ type CliParser struct {
 	InventoryPath string
 	RolePaths     []string
 	Verbosity     int
-	Tags          []string
 	ExtraVars     []string
+	Tags          string
 	Limit         string
 }
 
@@ -94,6 +94,9 @@ func (p *CliParser) Parse() error {
 	// flag.StringVar(&p., "u", "", "username for ssh connections")
 	// flag.StringVar(&p., "user", "", "username for ssh connection")
 	flag.StringVar(&p.Limit, "limit", "", "group/hosts limit")
+	flag.StringVar(&p.Limit, "l", "", "group/hosts limit")
+	flag.StringVar(&p.Tags, "tags", "", "tasks limit")
+	flag.StringVar(&p.Tags, "t", "", "tasks limit")
 	flag.Parse()
 	return nil
 }
