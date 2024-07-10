@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/sftp"
 	"github.com/smahm006/gear/internal/inventory"
-	"github.com/smahm006/gear/internal/tasks/requonse"
+	"github.com/smahm006/gear/internal/tasks/exchange"
 	"github.com/smahm006/gear/internal/utils"
 	"golang.org/x/crypto/ssh"
 )
@@ -126,7 +126,7 @@ func (s *SshConnection) WhoAmI() (string, error) {
 	return user, nil
 }
 
-func (s *SshConnection) Execute(command string) *requonse.TaskResponse {
+func (s *SshConnection) Execute(command string) *exchange.TaskResponse {
 	const line_break = "-----------"
 	getFilteredOut := func(output string) string {
 		index := strings.Index(output, line_break)
@@ -135,8 +135,8 @@ func (s *SshConnection) Execute(command string) *requonse.TaskResponse {
 		}
 		return output
 	}
-	responseErr := func(response *requonse.TaskResponse, err error) *requonse.TaskResponse {
-		response.Type = requonse.Failed
+	responseErr := func(response *exchange.TaskResponse, err error) *exchange.TaskResponse {
+		response.Type = exchange.Failed
 		response.CommandResult.Cmd = command
 		response.CommandResult.Err = err.Error()
 		response.CommandResult.Rc = default_exit_code
@@ -148,7 +148,7 @@ func (s *SshConnection) Execute(command string) *requonse.TaskResponse {
 	var exitcode int
 	var err error
 
-	response := requonse.NewTaskResponse()
+	response := exchange.NewTaskResponse()
 	inpipe, err = s.Session.StdinPipe()
 	if err != nil {
 		return responseErr(response, err)
@@ -165,7 +165,7 @@ func (s *SshConnection) Execute(command string) *requonse.TaskResponse {
 	}
 	_, err = inpipe.Write([]byte(fmt.Sprintf(`/usr/bin/env sh -c "LANG=C %s"`, command) + "\n"))
 	if err != nil {
-		response.Type = requonse.Failed
+		response.Type = exchange.Failed
 		if exit_error, ok := err.(*ssh.ExitError); ok {
 			exitcode = exit_error.ExitStatus()
 		} else {
@@ -183,7 +183,7 @@ func (s *SshConnection) Execute(command string) *requonse.TaskResponse {
 	stdout = getFilteredOut(outbuf.String())
 	stderr = errbuf.String()
 
-	response.CommandResult = &requonse.CommandResult{
+	response.CommandResult = &exchange.CommandResult{
 		Cmd: command,
 		Out: stdout,
 		Err: stderr,

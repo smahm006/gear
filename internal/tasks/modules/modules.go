@@ -1,10 +1,10 @@
 package modules
 
 import (
-	"github.com/smahm006/gear/internal/tasks/requonse"
+	"github.com/smahm006/gear/internal/tasks/exchange"
 )
 
 type Module interface {
-	Query() requonse.TaskRequest
+	Query() exchange.TaskRequest
 	Run()
 }

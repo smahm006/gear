@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"github.com/smahm006/gear/internal/tasks/requonse"
+	"github.com/smahm006/gear/internal/tasks/exchange"
 )
 
 type ShellModule struct {
@@ -14,7 +14,7 @@ type ShellModule struct {
 func (s *ShellModule) Run() {
 }
 
-func (s *ShellModule) Query() requonse.TaskRequest {
-	var request requonse.TaskRequest
+func (s *ShellModule) Query() exchange.TaskRequest {
+	var request exchange.TaskRequest
 	return request
 }

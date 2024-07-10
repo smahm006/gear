@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"github.com/smahm006/gear/internal/inventory"
-	"github.com/smahm006/gear/internal/tasks/requonse"
+	"github.com/smahm006/gear/internal/tasks/exchange"
 	"github.com/smahm006/gear/internal/utils"
 )
 
@@ -70,10 +70,10 @@ func (l *LocalConnection) WhoAmI() (string, error) {
 	return user, nil
 }
 
-func (l *LocalConnection) Execute(command string) *requonse.TaskResponse {
+func (l *LocalConnection) Execute(command string) *exchange.TaskResponse {
 	var outbuf, errbuf strings.Builder
 	var exitcode int
-	response := requonse.NewTaskResponse()
+	response := exchange.NewTaskResponse()
 	l.Session.Stdout = &outbuf
 	l.Session.Stderr = &errbuf
 	l.Session.Path = "/usr/bin/env"
@@ -82,7 +82,7 @@ func (l *LocalConnection) Execute(command string) *requonse.TaskResponse {
 	stdout := outbuf.String()
 	stderr := errbuf.String()
 	if err != nil {
-		response.Type = requonse.Failed
+		response.Type = exchange.Failed
 		if exit_error, ok := err.(*exec.ExitError); ok {
 			ws := exit_error.Sys().(syscall.WaitStatus)
 			exitcode = ws.ExitStatus()
@@ -96,7 +96,7 @@ func (l *LocalConnection) Execute(command string) *requonse.TaskResponse {
 		ws := l.Session.ProcessState.Sys().(syscall.WaitStatus)
 		exitcode = ws.ExitStatus()
 	}
-	response.CommandResult = &requonse.CommandResult{
+	response.CommandResult = &exchange.CommandResult{
 		Cmd: command,
 		Out: stdout,
 		Err: stderr,
