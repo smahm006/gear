@@ -55,13 +55,15 @@ func (i *Inventory) LoadInventory(path string) error {
 				if err := validateInventoryValueType(path, gkey, gvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 					return group, err
 				}
-				group.Variables = gvalue.((map[string]interface{}))
+				for gvarkey, gvarval := range gvalue.((map[string]interface{})) {
+					group.Variables[gvarkey] = fmt.Sprint(gvarval)
+				}
 			case "env":
 				if err := validateInventoryValueType(path, gkey, gvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 					return group, err
 				}
-				for genvkey, genvvar := range gvalue.((map[string]interface{})) {
-					group.Environment[genvkey] = fmt.Sprint(genvvar)
+				for genvkey, genvval := range gvalue.((map[string]interface{})) {
+					group.Environment[genvkey] = fmt.Sprint(genvval)
 				}
 			case "hosts":
 				switch v := gvalue.(type) {
@@ -86,13 +88,15 @@ func (i *Inventory) LoadInventory(path string) error {
 								if err := validateInventoryValueType(path, hkey, hvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 									return group, err
 								}
-								host.Variables = hvalue.((map[string]interface{}))
+								for hvarkey, hvarval := range hvalue.((map[string]interface{})) {
+									host.Variables[hvarkey] = fmt.Sprint(hvarval)
+								}
 							case "env":
 								if err := validateInventoryValueType(path, hkey, hvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 									return group, err
 								}
-								for henvkey, henvvar := range hvalue.((map[string]interface{})) {
-									host.Environment[henvkey] = fmt.Sprint(henvvar)
+								for henvkey, henvval := range hvalue.((map[string]interface{})) {
+									host.Environment[henvkey] = fmt.Sprint(henvval)
 								}
 							}
 						}
@@ -124,13 +128,15 @@ func (i *Inventory) LoadInventory(path string) error {
 										if err := validateInventoryValueType(path, hhkey, hhvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 											return group, err
 										}
-										host.Variables = hhvalue.((map[string]interface{}))
+										for hhvarkey, hhvarval := range hhvalue.((map[string]interface{})) {
+											host.Variables[hhvarkey] = fmt.Sprint(hhvarval)
+										}
 									case "env":
 										if err := validateInventoryValueType(path, hhkey, hhvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 											return group, err
 										}
-										for hhenvkey, hhenvvar := range hhvalue.((map[string]interface{})) {
-											host.Environment[hhenvkey] = fmt.Sprint(hhenvvar)
+										for hhenvkey, hhenvval := range hhvalue.((map[string]interface{})) {
+											host.Environment[hhenvkey] = fmt.Sprint(hhenvval)
 										}
 									}
 								}

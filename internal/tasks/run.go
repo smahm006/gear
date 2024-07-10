@@ -50,6 +50,7 @@ func (t *Task) RunTask(status *state.RunStatus) {
 			return
 		}
 		ret := connection.Execute("echo $CANYOUSEEME")
+		fmt.Println(ret.CommandResult.Out)
 		if ret.CommandResult.Rc != 0 {
 			fmt.Println(ret.CommandResult.Err)
 			return

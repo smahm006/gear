@@ -75,6 +75,7 @@ func (p *Playbook) RunPlaybook(cli *cli.CliParser, i *inventory.Inventory) error
 		for _, post_task := range play.PostTasks {
 			post_task.RunTask(run_status)
 		}
+		CleanUpPlay(run_status)
 	}
 	return nil
 }

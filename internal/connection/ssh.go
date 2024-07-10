@@ -2,8 +2,10 @@ package connection
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/pkg/sftp"
 	"github.com/smahm006/gear/internal/inventory"
@@ -21,14 +23,15 @@ type SshConnection struct {
 
 func NewSshConnection(Host *inventory.Host) *SshConnection {
 	return &SshConnection{
-		Host: Host,
+		Config: &ssh.ClientConfig{},
+		Host:   Host,
 	}
 }
 
 func (s *SshConnection) Connect() error {
 	// SSH username
 	var username string
-	if gsu := s.Host.Getenv("gear_ssh_user"); len(gsu) != 0 {
+	if gsu := s.Host.Getvar("gear_ssh_user"); len(gsu) != 0 {
 		username = gsu
 	} else if env_gsu := os.Getenv("GEAR_SSH_USER"); len(env_gsu) != 0 {
 		username = env_gsu
@@ -42,12 +45,13 @@ func (s *SshConnection) Connect() error {
 	var signer ssh.Signer
 	var password string
 	var err error
-	if gspk := s.Host.Getenv("gear_ssh_private_key"); len(gspk) != 0 {
-		pk_data, err := utils.ReadFile(gspk)
+	if gspk := s.Host.Getvar("gear_ssh_private_key"); len(gspk) != 0 {
+		var pk_data []byte
+		pk_data, err = utils.ReadFile(gspk)
 		if err == nil {
 			signer, err = ssh.ParsePrivateKey(pk_data)
 		}
-	} else if env_gspk := s.Host.Getenv("GEAR_SSH_PRIVATE_KEY"); err != nil && len(env_gspk) != 0 {
+	} else if env_gspk := os.Getenv("GEAR_SSH_PRIVATE_KEY"); err != nil && len(env_gspk) != 0 {
 		pk_data, err := utils.ReadFile(env_gspk)
 		if err == nil {
 			signer, err = ssh.ParsePrivateKey(pk_data)
@@ -57,7 +61,7 @@ func (s *SshConnection) Connect() error {
 		s.Config.Auth = []ssh.AuthMethod{ssh.PublicKeys(signer)}
 	} else {
 		// Could not find or parse a private key
-		if gsp := s.Host.Getenv("gear_ssh_password"); len(gsp) != 0 {
+		if gsp := s.Host.Getvar("gear_ssh_password"); len(gsp) != 0 {
 			password = gsp
 		} else if env_gsp := os.Getenv("GEAR_SSH_PASSWORD"); len(env_gsp) != 0 {
 			password = env_gsp
@@ -68,7 +72,7 @@ func (s *SshConnection) Connect() error {
 	s.Config.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	// SSH hostname
 	var hostname string
-	if gsh := s.Host.Getenv("gear_ssh_hostname"); len(gsh) != 0 {
+	if gsh := s.Host.Getvar("gear_ssh_hostname"); len(gsh) != 0 {
 		hostname = gsh
 	} else if env_gsh := os.Getenv("GEAR_SSH_HOSTNAME"); len(env_gsh) != 0 {
 		hostname = env_gsh
@@ -77,7 +81,7 @@ func (s *SshConnection) Connect() error {
 	}
 	// SSH port
 	var port string
-	if gsh := s.Host.Getenv("gear_ssh_port"); len(gsh) != 0 {
+	if gsh := s.Host.Getvar("gear_ssh_port"); len(gsh) != 0 {
 		port = gsh
 	} else if env_gsh := os.Getenv("GEAR_SSH_PORT"); len(env_gsh) != 0 {
 		port = env_gsh
@@ -93,9 +97,6 @@ func (s *SshConnection) Connect() error {
 	session, err := client.NewSession()
 	if err != nil {
 		return fmt.Errorf("failed to create session for host %s: %v", s.Host.Name, err)
-	}
-	for k, v := range s.Host.Environment {
-		session.Setenv(k, v)
 	}
 	s.Session = session
 	return nil
@@ -125,8 +126,70 @@ func (s *SshConnection) WhoAmI() (string, error) {
 	return user, nil
 }
 
-func (s *SshConnection) Execute(string) *requonse.TaskResponse {
-	return nil
+func (s *SshConnection) Execute(command string) *requonse.TaskResponse {
+	const line_break = "-----------"
+	getFilteredOut := func(output string) string {
+		index := strings.Index(output, line_break)
+		if index != -1 {
+			return output[index+len(line_break):]
+		}
+		return output
+	}
+	responseErr := func(response *requonse.TaskResponse, err error) *requonse.TaskResponse {
+		response.Type = requonse.Failed
+		response.CommandResult.Cmd = command
+		response.CommandResult.Err = err.Error()
+		response.CommandResult.Rc = default_exit_code
+		return response
+	}
+	var inpipe io.WriteCloser
+	var outbuf, errbuf strings.Builder
+	var stdout, stderr string
+	var exitcode int
+	var err error
+
+	response := requonse.NewTaskResponse()
+	inpipe, err = s.Session.StdinPipe()
+	if err != nil {
+		return responseErr(response, err)
+	}
+	s.Session.Stdout = &outbuf
+	s.Session.Stderr = &errbuf
+	err = s.Session.Shell()
+	if err != nil {
+		return responseErr(response, err)
+	}
+	_, err = inpipe.Write([]byte(fmt.Sprintf("echo %s\n", line_break)))
+	for k, v := range s.Host.Environment {
+		_, err = inpipe.Write([]byte(fmt.Sprintf("export %s=%s\n", k, v)))
+	}
+	_, err = inpipe.Write([]byte(fmt.Sprintf(`/usr/bin/env sh -c "LANG=C %s"`, command) + "\n"))
+	if err != nil {
+		response.Type = requonse.Failed
+		if exit_error, ok := err.(*ssh.ExitError); ok {
+			exitcode = exit_error.ExitStatus()
+		} else {
+			exitcode = default_exit_code
+		}
+	} else {
+		exitcode = 0
+	}
+
+	inpipe.Close()
+	err = s.Session.Wait()
+	if err != nil {
+		return responseErr(response, err)
+	}
+	stdout = getFilteredOut(outbuf.String())
+	stderr = errbuf.String()
+
+	response.CommandResult = &requonse.CommandResult{
+		Cmd: command,
+		Out: stdout,
+		Err: stderr,
+		Rc:  exitcode,
+	}
+	return response
 }
 
 func (s *SshConnection) CopyFile(src string, dst string) error {

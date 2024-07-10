@@ -19,7 +19,6 @@ type LocalConnection struct {
 
 func EnvMapToSlice(env_map map[string]string) []string {
 	var env []string
-	env = append(env, "PATH=/usr/sbin:/usr/bin:/sbin:/bin")
 	for k, v := range env_map {
 		env = append(env, fmt.Sprintf("%s=%s", k, v))
 	}
@@ -75,9 +74,9 @@ func (l *LocalConnection) Execute(command string) *requonse.TaskResponse {
 	var outbuf, errbuf strings.Builder
 	var exitcode int
 	response := requonse.NewTaskResponse()
-	l.Session.Path = "/usr/bin/env"
 	l.Session.Stdout = &outbuf
 	l.Session.Stderr = &errbuf
+	l.Session.Path = "/usr/bin/env"
 	l.Session.Args = []string{"/usr/bin/env", "sh", "-c", fmt.Sprintf("LANG=C %s", command)}
 	err := l.Session.Run()
 	stdout := outbuf.String()

@@ -5,7 +5,7 @@ type Group struct {
 	ParentGroups map[string]*Group
 	SubGroups    map[string]*Group
 	Hosts        map[string]*Host
-	Variables    map[string]interface{}
+	Variables    map[string]string
 	Environment  map[string]string
 }
 
@@ -15,7 +15,7 @@ func NewGroup(name string) *Group {
 		ParentGroups: make(map[string]*Group),
 		SubGroups:    make(map[string]*Group),
 		Hosts:        make(map[string]*Host),
-		Variables:    make(map[string]interface{}),
+		Variables:    make(map[string]string),
 		Environment:  make(map[string]string),
 	}
 }
