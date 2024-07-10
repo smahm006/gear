@@ -1,0 +1,44 @@
+vagrantfile_api_version = '2'
+
+clusters = [
+  {
+    name: 'development',
+    ip: '192.168.60.10',
+    hostname: 'master',
+    ports: [80, 443],
+    memory: 512,
+    cpus: 1
+  },
+  {
+    name: 'staging',
+    ip: '192.168.60.11',
+    hostname: 'staging',
+    ports: [80, 443],
+    memory: 512,
+    cpus: 1
+  },
+  {
+    name: 'production',
+    ip: '192.168.60.12',
+    hostname: '192.168.60.10',
+    ports: [80, 443],
+    memory: 512,
+    cpus: 1
+  },
+]
+
+Vagrant.configure(vagrantfile_api_version) do |config|
+  config.vm.box = 'debian/bookworm64'
+  config.vm.box_check_update = true
+  config.ssh.insert_key = false
+  clusters.each_with_index do |cluster, index|
+    config.vm.define (cluster[:name]).to_s do |cluster_config|
+      cluster_config.vm.hostname = (cluster[:hostname]).to_s
+      cluster_config.vm.provider 'virtualbox' do |vbox|
+        vbox.memory = cluster[:memory]
+        vbox.cpus = cluster[:cpus]
+      end
+      cluster_config.vm.network 'private_network', ip: cluster[:ip]
+    end
+  end
+end
