@@ -23,7 +23,8 @@ func (t *Task) RunTask(status *state.RunStatus) {
 				fmt.Println(err)
 			}
 			connection.Connect()
-			response := connection.Execute("echo $CANYOUSEEME")
+			request := t.Module.Query()
+			response := t.Module.Run(request, connection)
 			if err != nil {
 				fmt.Println(err)
 			}
