@@ -6,6 +6,7 @@ type ModuleWith struct {
 	Items      []string `yaml:"items"`
 	Tags       []string `yaml:"tags"`
 	DelegateTo string   `yaml:"delegate_to"`
+	Subscribe  string   `yaml:"subscribe"`
 }
 
 type ModuleAnd struct {

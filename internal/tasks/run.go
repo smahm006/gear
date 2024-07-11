@@ -14,7 +14,7 @@ func (t *Task) RunTask(state *state.RunState) {
 	var wg_command sync.WaitGroup
 	var wg_processing sync.WaitGroup
 	for _, host := range state.Status.Hosts {
-		fmt.Printf("running task %s\n", t.Name)
+		fmt.Printf("running task %s on host %s\n", t.Name, host.Name)
 		wg_command.Add(1)
 		go func(host *inventory.Host, resp_chan chan *exchange.TaskResponse) {
 			defer wg_command.Done()
