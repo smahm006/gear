@@ -3,18 +3,20 @@
     tags: ['dev', 'go']
     sudo: true
   name: test 1
-  cmd: "ls -la"
+  cmd: "ls"
   save: go_latest
   and:
     retry: 3
 
 - !shell
   name: test 2
-  cmd: "echo HI"
+  cmd: "echo hello"
   save: hello
   with:
     tags: ['naa']
 
 - !shell
   name: test 3
-  cmd: "reboot"
+  cmd: "test"
+  with:
+    sudo: true

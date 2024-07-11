@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"github.com/smahm006/gear/internal/connection"
 	"github.com/smahm006/gear/internal/tasks/exchange"
 )
 
@@ -11,10 +12,12 @@ type ShellModule struct {
 	ChangedWhen string `yaml:"changed_when"`
 }
 
-func (s *ShellModule) Run() {
+func (s *ShellModule) Run(connection connection.Connection, request *exchange.TaskRequest, with *ModuleWith, and *ModuleAnd) *exchange.TaskResponse {
+	var response *exchange.TaskResponse
+	response = connection.Execute(s.Cmd)
+	return response
 }
 
-func (s *ShellModule) Query() exchange.TaskRequest {
-	var request exchange.TaskRequest
-	return request
+func (s *ShellModule) Query() *exchange.TaskRequest {
+	return &exchange.TaskRequest{Type: exchange.Execute}
 }

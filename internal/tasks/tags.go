@@ -1,4 +1,4 @@
-package playbook
+package tasks
 
 import (
 	"fmt"
@@ -6,17 +6,16 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/smahm006/gear/internal/inventory"
 	"github.com/smahm006/gear/internal/playbook/state"
 )
 
-type LimitValidationError struct {
-	Limit string
-	Err   error
+type TagsValidationError struct {
+	Tags string
+	Err  error
 }
 
-func (l *LimitValidationError) Error() string {
-	return fmt.Sprintf("invalid limit %q\n%v", l.Limit, l.Err)
+func (l *TagsValidationError) Error() string {
+	return fmt.Sprintf("invalid tags %q\n%v", l.Tags, l.Err)
 }
 
 type Token int
@@ -69,31 +68,30 @@ func (t Token) Apply(slice1 []string, slice2 []string) []string {
 	return nil
 }
 
-func getAllHosts(state *state.RunState) []string {
-	var hosts []string
-	for host_name, _ := range state.Inventory.GroupHostsMembership.HostsToGroup {
-		hosts = append(hosts, host_name)
+func getAllTasks(tasks []*Task) []string {
+	var tasks_list []string
+	for _, task := range tasks {
+		tasks_list = append(tasks_list, task.Name)
 	}
-	return hosts
+	return tasks_list
 }
 
-func getHostsByName(name string, state *state.RunState, play *Play) ([]string, error) {
-	if slices.Contains(play.Groups, name) {
-		if hosts, exists := state.Inventory.GroupHostsMembership.GroupToHosts[name]; exists {
-			return hosts, nil
-		}
-	}
-	if groups, exists := state.Inventory.GroupHostsMembership.HostsToGroup[name]; exists {
-		for _, gname := range groups {
-			if slices.Contains(play.Groups, gname) {
-				return []string{name}, nil
+func getTasksByName(name string, tasks []*Task) ([]string, error) {
+	var tasks_list []string
+	for _, task := range tasks {
+		if task.With != nil {
+			if slices.Contains(task.With.Tags, name) {
+				tasks_list = append(tasks_list, task.Name)
 			}
 		}
 	}
-	return nil, fmt.Errorf("no group or hosts found for (%s) referenced in limit found", name)
+	if len(tasks_list) != 0 {
+		return tasks_list, nil
+	}
+	return nil, fmt.Errorf("no tasks found for (%s) referenced in tags found", name)
 }
 
-func divideByToken(limit string, token Token) []string {
+func divideByToken(tags string, token Token) []string {
 	var r *regexp.Regexp
 	switch token {
 	case Not:
@@ -103,16 +101,16 @@ func divideByToken(limit string, token Token) []string {
 	case And:
 		r = regexp.MustCompile(`AND`)
 	}
-	parts := r.Split(limit, 2)
+	parts := r.Split(tags, 2)
 	for i := range parts {
 		parts[i] = strings.TrimSpace(parts[i])
 	}
 	return parts
 }
 
-func expressionParse(limit string, state *state.RunState, play *Play) ([]string, error) {
-	limit_err := &LimitValidationError{Limit: limit}
-	var hosts_limited []string
+func expressionParse(tags string, tasks []*Task) ([]string, error) {
+	limit_err := &TagsValidationError{Tags: tags}
+	var tasks_limited []string
 	tokens := []Token{Not, Or, And}
 
 	var applyOperations func(string, bool) ([]string, error)
@@ -120,10 +118,10 @@ func expressionParse(limit string, state *state.RunState, play *Play) ([]string,
 		var result []string
 		re := regexp.MustCompile(`NOT|OR|AND`)
 		if len(expression) == 0 && started_with_not {
-			all_hosts := getAllHosts(state)
-			return append(result, all_hosts...), nil
-		} else if !re.MatchString(expression) {
-			sole_result, err := getHostsByName(expression, state, play)
+			all_tasks := getAllTasks(tasks)
+			return append(result, all_tasks...), nil
+		} else if len(expression) != 0 && !re.MatchString(expression) {
+			sole_result, err := getTasksByName(expression, tasks)
 			if err != nil {
 				return nil, err
 			}
@@ -175,49 +173,47 @@ func expressionParse(limit string, state *state.RunState, play *Play) ([]string,
 		}
 		return result, nil
 	}
+
 	// Check if limit started with NOT
 	re_not := regexp.MustCompile(`^NOT.*`)
 
 	// Call the recursive function to apply operations
-	hosts_limited, err := applyOperations(limit, re_not.MatchString(limit))
+	tasks_limited, err := applyOperations(tags, re_not.MatchString(tags))
 	if err != nil {
 		limit_err.Err = err
 		return nil, limit_err
 	}
 
-	return hosts_limited, nil
+	return tasks_limited, nil
 }
 
-func getHostsGivenLimit(limit string, state *state.RunState, play *Play) (map[string]*inventory.Host, error) {
-	hosts_limited := make(map[string]*inventory.Host)
-	hosts, err := expressionParse(limit, state, play)
+func getTasksGivenTags(tags string, tasks []*Task) ([]*Task, error) {
+	var tasks_limited []*Task
+	tasks_list, err := expressionParse(tags, tasks)
+	for _, task_name := range tasks_list {
+		for _, task := range tasks {
+			if task.Name == task_name {
+				tasks_limited = append(tasks_limited, task)
+			}
+		}
+	}
 	if err != nil {
 		return nil, err
 	}
-	for _, host_name := range hosts {
-		hosts_limited[host_name], _ = state.Inventory.GetHost(host_name)
-	}
-	return hosts_limited, nil
+	return tasks_limited, nil
 }
 
-func collectHosts(state *state.RunState, play *Play) (map[string]*inventory.Host, error) {
+func collectTasks(state *state.RunState, tasks []*Task) ([]*Task, error) {
 	var err error
-	collective_hosts := make(map[string]*inventory.Host)
-	limited := len(state.ParsedFlags.Limit) != 0
+	var collective_tasks []*Task = tasks
+	limited := len(state.ParsedFlags.Tags) != 0
 	if !limited {
-		for _, group_name := range play.Groups {
-			hosts := state.Inventory.GroupHostsMembership.GroupToHosts[group_name]
-			for _, host_name := range hosts {
-				host, _ := state.Inventory.GetHost(host_name)
-				collective_hosts[host_name] = host
-			}
-		}
-		return collective_hosts, nil
+		return collective_tasks, nil
 	} else {
-		collective_hosts, err = getHostsGivenLimit(state.ParsedFlags.Limit, state, play)
+		collective_tasks, err = getTasksGivenTags(state.ParsedFlags.Tags, tasks)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return collective_hosts, nil
+	return collective_tasks, nil
 }

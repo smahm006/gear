@@ -11,8 +11,8 @@ type Task struct {
 	Tag    string
 	Name   string `yaml:"name"`
 	Module modules.Module
-	With   modules.PreTaskLogic  `yaml:"with"`
-	And    modules.PostTaskLogic `yaml:"and"`
+	With   *modules.ModuleWith `yaml:"with"`
+	And    *modules.ModuleAnd  `yaml:"and"`
 }
 
 // Need custom unmarshal logic for different modules
@@ -37,7 +37,7 @@ func (t *Task) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-type Tasks []Task
+type Tasks []*Task
 
 func NewTasks() *Tasks {
 	return &Tasks{}
@@ -55,9 +55,13 @@ func (t *Tasks) LoadTasks(path string) error {
 	return nil
 }
 
-func (t *Tasks) RunTasks(run_status *state.RunStatus) error {
-	for _, task := range *t {
-		task.RunTask(run_status)
+func (t *Tasks) RunTasks(run_state *state.RunState) error {
+	collected_tasks, err := collectTasks(run_state, *t)
+	if err != nil {
+		return err
+	}
+	for _, task := range collected_tasks {
+		task.RunTask(run_state)
 	}
 	return nil
 }

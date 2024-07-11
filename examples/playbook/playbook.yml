@@ -4,9 +4,11 @@
   - servers
   pre:
    - !shell
-     cmd: "ls -la"
+     name: pe-tasks
+     cmd: "echo running pre-tasks"
   roles:
     - role: test
   post:
    - !shell
-     cmd: "ls -la"
+     name: post-tasks
+     cmd: "echo running post-tasks"
