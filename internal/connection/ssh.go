@@ -31,8 +31,8 @@ func NewSshConnection(Host *inventory.Host) *SshConnection {
 func (s *SshConnection) Connect() error {
 	// SSH username
 	var username string
-	if gear_ssh_user := s.Host.Getvar("gear_ssh_user"); len(gear_ssh_user) != 0 {
-		username = gear_ssh_user
+	if gear_ssh_user := s.Host.Getvar("gear_ssh_user"); gear_ssh_user != 0 {
+		username = fmt.Sprint(gear_ssh_user)
 	} else if env_gear_ssh_user := os.Getenv("GEAR_SSH_USER"); len(env_gear_ssh_user) != 0 {
 		username = env_gear_ssh_user
 	} else {
@@ -45,9 +45,9 @@ func (s *SshConnection) Connect() error {
 	var signer ssh.Signer
 	var password string
 	var err error
-	if gear_ssh_pkey := s.Host.Getvar("gear_ssh_private_key"); len(gear_ssh_pkey) != 0 {
+	if gear_ssh_pkey := s.Host.Getvar("gear_ssh_private_key"); gear_ssh_pkey != nil {
 		var pk_data []byte
-		pk_data, err = utils.ReadFile(gear_ssh_pkey)
+		pk_data, err = utils.ReadFile(fmt.Sprint(gear_ssh_pkey))
 		if err == nil {
 			signer, err = ssh.ParsePrivateKey(pk_data)
 		}
@@ -61,8 +61,8 @@ func (s *SshConnection) Connect() error {
 		s.Config.Auth = []ssh.AuthMethod{ssh.PublicKeys(signer)}
 	} else {
 		// Could not find or parse a private key
-		if gear_ssh_password := s.Host.Getvar("gear_ssh_password"); len(gear_ssh_password) != 0 {
-			password = gear_ssh_password
+		if gear_ssh_password := s.Host.Getvar("gear_ssh_password"); gear_ssh_password != nil {
+			password = fmt.Sprint(gear_ssh_password)
 		} else if env_gear_ssh_password := os.Getenv("GEAR_SSH_PASSWORD"); len(env_gear_ssh_password) != 0 {
 			password = env_gear_ssh_password
 		}
@@ -72,8 +72,8 @@ func (s *SshConnection) Connect() error {
 	s.Config.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 	// SSH hostname
 	var hostname string
-	if gear_ssh_hostname := s.Host.Getvar("gear_ssh_hostname"); len(gear_ssh_hostname) != 0 {
-		hostname = gear_ssh_hostname
+	if gear_ssh_hostname := s.Host.Getvar("gear_ssh_hostname"); gear_ssh_hostname != nil {
+		hostname = fmt.Sprint(gear_ssh_hostname)
 	} else if env_gear_ssh_hostname := os.Getenv("GEAR_SSH_HOSTNAME"); len(env_gear_ssh_hostname) != 0 {
 		hostname = env_gear_ssh_hostname
 	} else {
@@ -81,8 +81,8 @@ func (s *SshConnection) Connect() error {
 	}
 	// SSH port
 	var port string
-	if gear_ssh_port := s.Host.Getvar("gear_ssh_port"); len(gear_ssh_port) != 0 {
-		port = gear_ssh_port
+	if gear_ssh_port := s.Host.Getvar("gear_ssh_port"); gear_ssh_port != nil {
+		port = fmt.Sprint(gear_ssh_port)
 	} else if env_gear_ssh_port := os.Getenv("GEAR_SSH_PORT"); len(env_gear_ssh_port) != 0 {
 		port = env_gear_ssh_port
 	} else {

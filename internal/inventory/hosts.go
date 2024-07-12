@@ -21,7 +21,7 @@ const (
 
 type Host struct {
 	Name           string
-	Variables      map[string]string
+	Variables      map[string]interface{}
 	Environment    map[string]string
 	Os             *OS
 	PackageManager *PackageManager
@@ -30,7 +30,7 @@ type Host struct {
 func NewHost(name string) *Host {
 	return &Host{
 		Name:           name,
-		Variables:      make(map[string]string),
+		Variables:      make(map[string]interface{}),
 		Environment:    make(map[string]string),
 		Os:             nil,
 		PackageManager: nil,
@@ -65,7 +65,7 @@ func (h *Host) IsLocal() bool {
 	return h.Name == "127.0.0.1"
 }
 
-func (h *Host) Getvar(name string) string {
+func (h *Host) Getvar(name string) interface{} {
 	varr := h.Variables[name]
 	return varr
 }

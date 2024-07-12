@@ -22,12 +22,13 @@ func (t *Task) RunTask(state *state.RunState) {
 			if err != nil {
 				fmt.Println(err)
 			}
-			connection.Connect()
-			request := t.Module.Query()
-			response := t.Module.Run(connection, request, t.With, t.And)
+			err = connection.Connect()
 			if err != nil {
 				fmt.Println(err)
+				return
 			}
+			request := t.Module.Query()
+			response := t.Module.Run(connection, request, t.With, t.And)
 			resp_chan <- response
 		}(host, resp_chan)
 	}
