@@ -1,12 +1,12 @@
 package modules
 
 type ModuleWith struct {
-	Conditions string   `yaml:"conditions"`
-	Sudo       bool     `yaml:"sudo"`
-	Items      []string `yaml:"items"`
-	Tags       []string `yaml:"tags"`
-	DelegateTo string   `yaml:"delegate_to"`
-	Subscribe  string   `yaml:"subscribe"`
+	Conditions string        `yaml:"conditions"`
+	Sudo       bool          `yaml:"sudo"`
+	Items      []interface{} `yaml:"items"`
+	Tags       []string      `yaml:"tags"`
+	DelegateTo string        `yaml:"delegate_to"`
+	Subscribe  string        `yaml:"subscribe"`
 }
 
 type ModuleAnd struct {

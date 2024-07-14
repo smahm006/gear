@@ -10,6 +10,7 @@ const (
 	Executed
 	Skipped
 	Failed
+	Unsupported
 )
 
 type CommandResult struct {
@@ -33,6 +34,7 @@ type TaskResponse struct {
 	Changes       []string
 	Message       string
 	CommandResult *CommandResult
+	Error         error
 }
 
 func NewTaskResponse() *TaskResponse {

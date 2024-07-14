@@ -27,6 +27,14 @@ func (t *Task) UnmarshalYAML(value *yaml.Node) error {
 	}
 	t.Name = alias.Name
 	t.With = alias.With
+	// Set default items so we always iterate over one
+	if t.With == nil {
+		t.With = &modules.ModuleWith{
+			Items: []interface{}{""},
+		}
+	} else if t.With.Items == nil {
+		t.With.Items = []interface{}{""}
+	}
 	t.And = alias.And
 	// Get module based on tag
 	m, err := modules.MapTagToModule(t.Tag, value)
@@ -61,7 +69,9 @@ func (t *Tasks) RunTasks(run_state *state.RunState) error {
 		return err
 	}
 	for _, task := range collected_tasks {
-		task.RunTask(run_state)
+		for _, item := range task.With.Items {
+			task.RunTask(run_state, item)
+		}
 	}
 	return nil
 }

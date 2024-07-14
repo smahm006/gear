@@ -14,10 +14,21 @@ type ShellModule struct {
 
 func (s *ShellModule) Run(connection connection.Connection, request *exchange.TaskRequest, with *ModuleWith, and *ModuleAnd) *exchange.TaskResponse {
 	var response *exchange.TaskResponse
-	response = connection.Execute(s.Cmd)
+	switch request.Type {
+	case exchange.Execute:
+		response = s.Execute(connection, request, with, and)
+		response.Type = exchange.Executed
+	default:
+		return response
+	}
+
 	return response
 }
 
 func (s *ShellModule) Query() *exchange.TaskRequest {
 	return &exchange.TaskRequest{Type: exchange.Execute}
+}
+
+func (s *ShellModule) Execute(connection connection.Connection, request *exchange.TaskRequest, with *ModuleWith, and *ModuleAnd) *exchange.TaskResponse {
+	return connection.Execute(s.Cmd)
 }

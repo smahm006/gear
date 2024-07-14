@@ -9,12 +9,17 @@ import (
 	"github.com/smahm006/gear/internal/tasks/exchange"
 )
 
-func (t *Task) RunTask(state *state.RunState) {
+func (t *Task) RunTask(state *state.RunState, item interface{}) error {
 	resp_chan := make(chan *exchange.TaskResponse)
 	var wg_command sync.WaitGroup
 	var wg_processing sync.WaitGroup
+	task_name_parsed, err := executeItemTemplate(t.Name, state.Status.Variables, item)
+	if err != nil {
+		fmt.Println("ERROR: ", err)
+		return err
+	}
 	for _, host := range state.Status.Hosts {
-		fmt.Printf("running task %s on host %s\n", t.Name, host.Name)
+		fmt.Printf("running task %s on host %s with item %s\n", task_name_parsed, host.Name, item)
 		wg_command.Add(1)
 		go func(host *inventory.Host, resp_chan chan *exchange.TaskResponse) {
 			defer wg_command.Done()
@@ -42,4 +47,5 @@ func (t *Task) RunTask(state *state.RunState) {
 	wg_command.Wait()
 	close(resp_chan)
 	wg_processing.Wait()
+	return nil
 }

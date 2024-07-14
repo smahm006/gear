@@ -59,10 +59,12 @@ func (p *Playbook) RunPlaybook(cli *cli.CliParser, i *inventory.Inventory) error
 		if err = validateHosts(collected_hosts, play); err != nil {
 			return err
 		}
-		run_status := state.NewRunStatus(collected_hosts)
+		run_status := state.NewRunStatus(collected_hosts, play.Variables)
 		run_state.Status = run_status
 		for _, pre_task := range play.PreTasks {
-			pre_task.RunTask(run_state)
+			for _, item := range pre_task.With.Items {
+				pre_task.RunTask(run_state, item)
+			}
 		}
 		for _, p_role := range play.Roles {
 			role := roles.NewRole(p_role.Name, p_role.Variables, p_role.Tags)
@@ -74,7 +76,9 @@ func (p *Playbook) RunPlaybook(cli *cli.CliParser, i *inventory.Inventory) error
 			}
 		}
 		for _, post_task := range play.PostTasks {
-			post_task.RunTask(run_state)
+			for _, item := range post_task.With.Items {
+				post_task.RunTask(run_state, item)
+			}
 		}
 		CleanUpPlay(run_state.Status)
 	}

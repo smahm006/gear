@@ -1,14 +1,19 @@
+---
 - name: setup laptop
   groups:
-  - local
-  - servers
+    - local
+    - servers
+  vars:
+    playbook_var_1: playbook_var_1
+    playbook_var_2: playbook_var_2
+    playbook_var_3: playbook_var_3
   pre:
    - !shell
-     name: pe-tasks
-     cmd: "echo running pre-tasks"
+     name: pre task {{ .playbook_var_1 }}
+     cmd: "echo doing some pre tasks"
   roles:
     - role: test
   post:
    - !shell
-     name: post-tasks
-     cmd: "echo running post-tasks"
+     name: post tasks
+     cmd: "echo doing some post tasks"
