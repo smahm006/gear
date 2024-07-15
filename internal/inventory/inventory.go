@@ -55,9 +55,7 @@ func (i *Inventory) LoadInventory(path string) error {
 				if err := validateInventoryValueType(path, gkey, gvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 					return group, err
 				}
-				for gvarkey, gvarval := range gvalue.((map[string]interface{})) {
-					group.Variables[gvarkey] = fmt.Sprint(gvarval)
-				}
+				group.Variables = gvalue.((map[string]interface{}))
 			case "env":
 				if err := validateInventoryValueType(path, gkey, gvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 					return group, err
@@ -88,9 +86,7 @@ func (i *Inventory) LoadInventory(path string) error {
 								if err := validateInventoryValueType(path, hkey, hvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 									return group, err
 								}
-								for hvarkey, hvarval := range hvalue.((map[string]interface{})) {
-									host.Variables[hvarkey] = fmt.Sprint(hvarval)
-								}
+								host.Variables = hvalue.((map[string]interface{}))
 							case "env":
 								if err := validateInventoryValueType(path, hkey, hvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 									return group, err
@@ -128,9 +124,7 @@ func (i *Inventory) LoadInventory(path string) error {
 										if err := validateInventoryValueType(path, hhkey, hhvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 											return group, err
 										}
-										for hhvarkey, hhvarval := range hhvalue.((map[string]interface{})) {
-											host.Variables[hhvarkey] = fmt.Sprint(hhvarval)
-										}
+										host.Variables = hhvalue.((map[string]interface{}))
 									case "env":
 										if err := validateInventoryValueType(path, hhkey, hhvalue, reflect.TypeOf(map[string]interface{}{})); err != nil {
 											return group, err

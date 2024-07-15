@@ -7,5 +7,5 @@ import (
 
 type Module interface {
 	Query() *exchange.TaskRequest
-	Run(connection connection.Connection, request *exchange.TaskRequest, with *ModuleWith, and *ModuleAnd) *exchange.TaskResponse
+	Run(connection connection.Connection, request *exchange.TaskRequest, vars map[string]interface{}) *exchange.TaskResponse
 }

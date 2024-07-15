@@ -1,6 +1,8 @@
 package tasks
 
 import (
+	"fmt"
+
 	"github.com/smahm006/gear/internal/playbook/state"
 	"github.com/smahm006/gear/internal/tasks/modules"
 	"github.com/smahm006/gear/internal/utils"
@@ -27,6 +29,14 @@ func (t *Task) UnmarshalYAML(value *yaml.Node) error {
 	}
 	t.Name = alias.Name
 	t.With = alias.With
+	// Set default items so we always iterate over one
+	if t.With == nil {
+		t.With = &modules.ModuleWith{
+			Items: []interface{}{""},
+		}
+	} else if t.With.Items == nil {
+		t.With.Items = []interface{}{""}
+	}
 	t.And = alias.And
 	// Get module based on tag
 	m, err := modules.MapTagToModule(t.Tag, value)
@@ -61,7 +71,11 @@ func (t *Tasks) RunTasks(run_state *state.RunState) error {
 		return err
 	}
 	for _, task := range collected_tasks {
-		task.RunTask(run_state)
+		for _, item := range task.With.Items {
+			if err := task.RunTask(run_state, item); err != nil {
+				fmt.Println("ERROR: ", err)
+			}
+		}
 	}
 	return nil
 }

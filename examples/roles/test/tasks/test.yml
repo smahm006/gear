@@ -1,22 +1,23 @@
 - !shell
+  name: test {{ .item.name }} {{ .item.group }}
   with:
+    items:
+      - name:
+          test
+        group:
+          hi
+      - {"name": "roger", "group":  "sudo"}
+      - {"name": "maya", "group":  "wheel"}
     tags: ['dev', 'go']
     sudo: true
-  name: test 1
-  cmd: "ls"
+  cmd: "echo {{ .item.name }} {{ .item.group }}"
   save: go_latest
-  and:
-    retry: 3
 
-- !shell
-  name: test 2
-  cmd: "echo hello"
-  save: hello
-  with:
-    tags: ['naa']
-
-- !shell
-  name: test 3
-  cmd: "test"
-  with:
-    sudo: true
+# - !git
+#   name: test 2
+#   repo: https://github.com/{{ item.user }}/{{ item.repo }}
+#   branch: {{ item.branch }}
+#   with:
+#     items:
+#       - {"user": "smahm006", "repo": "gear", "branch": "main"}
+#       - {"user": "gchowdhury", "repo": "git-hello-world", "branch": "main"}

@@ -10,11 +10,22 @@ type RunStatus struct {
 	ConnectionCache *connection.ConnectionCache
 	Hosts           map[string]*inventory.Host
 	FailedHosts     map[string]*inventory.Host
+	Variables       map[string]interface{}
 }
 
-func NewRunStatus(hosts map[string]*inventory.Host) *RunStatus {
+func NewRunStatus(hosts map[string]*inventory.Host, vars map[string]interface{}) *RunStatus {
+	collected_vars := make(map[string]interface{})
+	for _, host := range hosts {
+		for key, value := range host.Variables {
+			collected_vars[key] = value
+		}
+	}
+	for key, value := range vars {
+		collected_vars[key] = value
+	}
 	return &RunStatus{
 		ConnectionCache: connection.NewConnectionCache(),
 		Hosts:           hosts,
+		Variables:       collected_vars,
 	}
 }
