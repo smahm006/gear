@@ -1,6 +1,8 @@
 package tasks
 
 import (
+	"fmt"
+
 	"github.com/smahm006/gear/internal/playbook/state"
 	"github.com/smahm006/gear/internal/tasks/modules"
 	"github.com/smahm006/gear/internal/utils"
@@ -70,7 +72,9 @@ func (t *Tasks) RunTasks(run_state *state.RunState) error {
 	}
 	for _, task := range collected_tasks {
 		for _, item := range task.With.Items {
-			task.RunTask(run_state, item)
+			if err := task.RunTask(run_state, item); err != nil {
+				fmt.Println("ERROR: ", err)
+			}
 		}
 	}
 	return nil

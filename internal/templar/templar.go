@@ -1,4 +1,4 @@
-package tasks
+package templar
 
 import (
 	"bytes"
@@ -8,9 +8,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// executeItemTemplate executes the template for a single item
-func executeItemTemplate(tstring string, vars map[string]interface{}, item interface{}) (string, error) {
-	vars["item"] = item
+// ExecuteItemTemplate executes the template for a single item
+func GetParsedTemplate(tstring string, vars map[string]interface{}) (string, error) {
 	var buf bytes.Buffer
 	tmpl, err := template.New("template").Parse(tstring)
 	if err != nil {
@@ -41,20 +40,20 @@ func executeTemplate(pattern string, vars map[string]interface{}, with_items int
 	}
 
 	// Process the items
-	switch items := with_items.(type) {
-	case []interface{}:
-		for _, item := range items {
-			if _, err := executeItemTemplate(pattern, vars, item); err != nil {
-				return err
-			}
-		}
-	case interface{}:
-		if _, err := executeItemTemplate(pattern, vars, items); err != nil {
-			return err
-		}
-	default:
-		return fmt.Errorf("unexpected type for with_items: %T", with_items)
-	}
+	// switch items := with_items.(type) {
+	// case []interface{}:
+	// 	for _, item := range items {
+	// 		if _, err := executeItemTemplate(pattern, vars); err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// case interface{}:
+	// 	if _, err := executeItemTemplate(pattern, vars); err != nil {
+	// 		return err
+	// 	}
+	// default:
+	// 	return fmt.Errorf("unexpected type for with_items: %T", with_items)
+	// }
 
 	return nil
 }

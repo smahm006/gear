@@ -7,15 +7,17 @@ import (
 	"github.com/smahm006/gear/internal/inventory"
 	"github.com/smahm006/gear/internal/playbook/state"
 	"github.com/smahm006/gear/internal/tasks/exchange"
+	"github.com/smahm006/gear/internal/templar"
 )
 
 func (t *Task) RunTask(state *state.RunState, item interface{}) error {
 	resp_chan := make(chan *exchange.TaskResponse)
 	var wg_command sync.WaitGroup
 	var wg_processing sync.WaitGroup
-	task_name_parsed, err := executeItemTemplate(t.Name, state.Status.Variables, item)
+
+	state.Status.Variables["item"] = item
+	task_name_parsed, err := templar.GetParsedTemplate(t.Name, state.Status.Variables)
 	if err != nil {
-		fmt.Println("ERROR: ", err)
 		return err
 	}
 	for _, host := range state.Status.Hosts {
@@ -33,7 +35,7 @@ func (t *Task) RunTask(state *state.RunState, item interface{}) error {
 				return
 			}
 			request := t.Module.Query()
-			response := t.Module.Run(connection, request, t.With, t.And)
+			response := t.Module.Run(connection, request, state.Status.Variables)
 			resp_chan <- response
 		}(host, resp_chan)
 	}
