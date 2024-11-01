@@ -4,38 +4,25 @@ local:
       test: hi
       test2: bye
 servers:
-  hosts:
-    - 192.168.60.20
-    - 192.168.60.25
+  vars:
+      gear_ssh_user: vagrant
+      gear_ssh_private_key: /home/smahm/workstation/architecture/virtualmachines/vagrant/insecure_private_key
   development:
-    hosts: 192.168.60.10
+    hosts: 192.168.121.186
     vars:
       server1_var: hi
     env:
       DEVELOPMENT_ENV_KEY: DEVELOPMENT_ENV_VALUE
   staging:
     hosts:
-      - 192.168.60.10
-      - 192.168.60.11
-    pre-staging:
-      hosts:
-        - 192.168.60.5
-    post-staging:
-      hosts:
-        - 192.168.60.5
-      env:
-        POST-STAGING_ENV_KEY: POST-STAGING_ENV_VALUE
+      - 192.168.121.229
     vars:
       test: bye
     env:
       STAGING_ENV_KEY: STAGING_ENV_VALUE
   production:
     hosts:
-      - 192.168.60.10
-      - 192.168.60.11:
-          env:
-            server3_host_2_env: hi
-      - 192.168.60.4
+      - 192.168.121.73
     vars:
       servers_var1: smahm
       servers_var2: 1234
