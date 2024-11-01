@@ -10,10 +10,10 @@
   pre:
    - !shell
      name: pre task {{ .playbook_var_1 }}
-     cmd: "echo doing some pre tasks"
+     cmd: "echo hi > /tmp/test"
   roles:
     - role: test
   post:
    - !shell
      name: post tasks
-     cmd: "echo doing some post tasks"
+     cmd: "echo bye >> /tmp/test"
