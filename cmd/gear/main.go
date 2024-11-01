@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/smahm006/gear/internal/cli"
@@ -25,6 +26,12 @@ func entrypoint() error {
 	if os.Args[1] == "version" || cmd.Version {
 		cli.ShowVersion()
 		return nil
+	}
+	if len(cmd.InventoryPath) == 0 {
+		return fmt.Errorf("no inventory path provided")
+	}
+	if len(cmd.PlaybookPath) == 0 {
+		return fmt.Errorf("no playbook path provided")
 	}
 	i := inventory.NewInventory()
 	if err = i.LoadInventory(cmd.InventoryPath); err != nil {

@@ -20,7 +20,7 @@ clusters = [
   {
     name: 'production',
     ip: '192.168.60.12',
-    hostname: '192.168.60.10',
+    hostname: 'production',
     ports: [80, 443],
     memory: 512,
     cpus: 1
@@ -34,7 +34,7 @@ Vagrant.configure(vagrantfile_api_version) do |config|
   clusters.each_with_index do |cluster, index|
     config.vm.define (cluster[:name]).to_s do |cluster_config|
       cluster_config.vm.hostname = (cluster[:hostname]).to_s
-      cluster_config.vm.provider 'virtualbox' do |vbox|
+      cluster_config.vm.provider 'libvirt' do |vbox|
         vbox.memory = cluster[:memory]
         vbox.cpus = cluster[:cpus]
       end
